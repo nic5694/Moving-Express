@@ -1,0 +1,9 @@
+#dont forget to uncomment the lines below and to fill the information, you can leave the last 2 lines commented if you want to use the docker for the database 
+!okta.oauth2.issuer=**/Place Auth0 Issuer for your Auth0 application/** 
+!okta.oauth2.client-id=**/Place Auth0 clientId for your Auth0 application/**
+!okta.oauth2.client-secret=**/Place Auth0 client secret for your Auth0 application/**
+!okta.oauth2.groups-claim=**/Place Auth0 group claim for your Auth0 Acapplicationcount/**
+!spring.mail.username=**/Place your smtp server (outlook or gmail) email/**
+!spring.mail.password=**/Place your smtp server (outlook or gmail) password/**
+!spring.mysql.username=**/Place your hosted database username/**
+!spring.mysql.password=**/Place your hosted database password/**
