@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipment Confirmation</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+        }
+        .email-header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+        }
+        .email-header img {
+            max-width: 150px;
+        }
+        .email-body {
+            padding: 20px;
+            text-align: left;
+        }
+        .confirmation-message {
+            color: #FFD700;
+            font-size: 18px;
+            margin: 20px 0;
+        }
+        .email-footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            font-size: 12px;
+        }
+        a {
+            color: #FFD700;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <a href='' target='_blank'><img src='https://i.postimg.cc/23G6WQp9/logo-L.png' border='0' alt='logo-L'/></a>
+        </div>
+        <div class="email-body">
+            <h1>Shipment Confirmation</h1>
+            <div class="confirmation-message" th:text="${shipmentID != null ? 'Your shipment with ID ' + shipmentID + ' has been created.' : ''}">
+            </div>
+            <p>If you don't have an account, you can create one <a href="https://api.movingexpress.systems/oauth2/authorization/okta">here</a>.</p>
+        </div>
+        <div class="email-footer">
+            Thank you for choosing Moving Express.
+        </div>
+    </div>
+</body>
+</html>

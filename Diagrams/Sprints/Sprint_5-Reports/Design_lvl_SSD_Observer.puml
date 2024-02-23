@@ -1,0 +1,105 @@
+@startuml
+title Observer Shipment Report Generation and Export Sequence Diagram
+
+actor Observer
+
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LandingPage as "<<View>>\nLandingPage"
+participant ObserverShipmentDetailsPage as "<<View>>\nObserverShipmentDetailsPage"
+participant ShipmentController as "<<Controller>>\nShipmentController"
+participant ShipmentService as "<<Service>>\nShipmentService"
+participant ShipmentRepository as "<<Repository>>\nShipmentRepository"
+participant ItemRepository as "<<Repository>>\nItemRepository"
+participant InventoryRepository as "<<Repository>>\nInventoryRepository"
+participant ShipmentResponseMapper as "<<Mapper>>\nShipmentResponseMapper"
+participant ItemResponseMapper as "<<Mapper>>\nItemResponseMapper"
+participant InventoryResponseMapper as "<<Mapper>>\nInventoryResponseMapper"
+participant Database as "<<Database>>\nDatabase"
+participant "React PDF" as ReactPDF
+
+' Response Models and their Activation
+participant "ShipmentResponseModel" as ShipmentResp
+participant "List<ItemResponseModel>" as ListItemResp
+participant "List<InventoryResponseModel>" as ListInventoryResp
+
+Observer -> LandingPage : Access LandingPage
+activate LandingPage
+
+LandingPage -> ObserverShipmentDetailsPage : Enter Observer Code\nRedirect to ObserverShipmentDetails
+activate ObserverShipmentDetailsPage
+deactivate LandingPage
+
+ObserverShipmentDetailsPage -> ShipmentController : GET /api/v1/movingexpress/shipments/{shipmentId}/observers/report?observerCode=observerCode
+deactivate ObserverShipmentDetailsPage
+activate ShipmentController
+
+ShipmentController -> ShipmentService : getShipmentDetailsByObserverCode(observerCode)
+activate ShipmentService
+
+ShipmentService -> ShipmentRepository : findById(shipmentId)
+activate ShipmentRepository
+ShipmentRepository -> Database : SELECT * FROM shipments WHERE id = shipmentId
+activate Database
+Database --> ShipmentRepository : shipment data
+deactivate Database
+ShipmentRepository --> ShipmentService : Shipment
+deactivate ShipmentRepository
+
+activate ShipmentResp
+ShipmentService -> ShipmentResponseMapper : mapToResponseModel(Shipment)
+activate ShipmentResponseMapper
+ShipmentResponseMapper --> ShipmentResp : createResponse(Shipment)
+ShipmentResp --> ShipmentService : ShipmentResp
+deactivate ShipmentResponseMapper
+deactivate ShipmentResp
+
+ShipmentService -> InventoryRepository : findByShipmentId(shipmentId)
+activate InventoryRepository
+InventoryRepository -> Database : SELECT * FROM inventories WHERE shipmentId = shipmentId
+activate Database
+Database --> InventoryRepository : Inventories
+deactivate Database
+InventoryRepository --> ShipmentService : Inventories
+deactivate InventoryRepository
+
+activate ListInventoryResp
+ShipmentService -> InventoryResponseMapper : mapToResponseModels(Inventories)
+activate InventoryResponseMapper
+InventoryResponseMapper --> ListInventoryResp : createResponses(Inventories)
+ListInventoryResp --> ShipmentService : ListInventoryResp
+deactivate InventoryResponseMapper
+deactivate ListInventoryResp
+
+loop for each Inventory in Inventories
+    ShipmentService -> ItemRepository : findByInventoryId(Inventory.inventoryId)
+    activate ItemRepository
+    ItemRepository -> Database : SELECT * FROM items WHERE inventoryId = Inventory.inventoryId
+    activate Database
+    Database --> ItemRepository : Items
+    deactivate Database
+    ItemRepository --> ShipmentService : Items
+    deactivate ItemRepository
+
+    activate ListItemResp
+    ShipmentService -> ItemResponseMapper : mapToResponseModels(Items)
+    activate ItemResponseMapper
+    ItemResponseMapper --> ListItemResp : createResponses(Items)
+    ListItemResp --> ShipmentService : ListItemResp
+    deactivate ItemResponseMapper
+    deactivate ListItemResp
+end
+
+ShipmentService --> ShipmentController : ShipmentResp, ListInventoryResp, ListItemResp
+deactivate ShipmentService
+deactivate ShipmentController
+
+activate ObserverShipmentDetailsPage
+ObserverShipmentDetailsPage -> ReactPDF : Generate PDF Report with ShipmentResp, ListInventoryResp, ListItemResp
+activate ReactPDF
+ReactPDF --> ObserverShipmentDetailsPage : PDF File
+deactivate ReactPDF
+
+ObserverShipmentDetailsPage --> Observer : Download PDF Report
+deactivate ObserverShipmentDetailsPage
+
+@enduml

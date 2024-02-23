@@ -1,0 +1,72 @@
+{
+	"info": {
+		"_postman_id": "7b76993f-6cf4-4cf3-b0b1-d4c2afcbf378",
+		"name": "Shipment Endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "24061727-7b76993f-6cf4-4cf3-b0b1-d4c2afcbf378"
+	},
+	"item": [
+		{
+			"name": "Add new Shipment",
+			"id": "2282cfbe-15c4-47be-9f83-dcd5c3e78293",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"quoteId\": \"341dbe66-36b1-4398-b708-dc55aaf60986\",\n  \"pickupStreetAddress\": \"123 Main St\",\n  \"pickupCity\": \"Anytown\",\n  \"pickupCountry\": \"USA\",\n  \"pickupPostalCode\": \"12345\",\n  \"pickupNumberOfRooms\": 5,\n  \"pickupElevator\": true,\n  \"pickupBuildingType\": \"Apartment\",\n  \"destinationStreetAddress\": \"456 Market St\",\n  \"destinationCity\": \"Othertown\",\n  \"destinationCountry\": \"CA\",\n  \"destinationPostalCode\": \"54321\",\n  \"destinationNumberOfRooms\": 4,\n  \"destinationElevator\": false,\n  \"destinationBuildingType\": \"House\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"555-1234\",\n  \"emailAddress\": \"testingemail@gmail.com\",\n  \"contactMethod\": \"EMAIL\",\n  \"expectedMovingDate\": \"2023-01-01\",\n  \"initiationDate\": \"2023-01-01T10:30:00\",\n  \"comment\": \"Moving soon\",\n  \"quoteStatus\": \"QUOTED\",\n  \"name\": \"Sample Shipment\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/movingexpress/shipments",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"movingexpress",
+						"shipments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get shipment by shipmentid",
+			"id": "cad0b936-b803-418b-8a90-f71b592647fb",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/movingexpress/shipments/2b9059b3-e817-4bfb-93a0-bc868611cfe4",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"movingexpress",
+						"shipments",
+						"2b9059b3-e817-4bfb-93a0-bc868611cfe4"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

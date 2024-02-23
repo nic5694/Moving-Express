@@ -1,0 +1,140 @@
+@startuml
+title Client Shipment Request Sequence Diagram
+
+actor Client
+
+' Define Views
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LandingPage as "<<View>>\nLandingPage"
+participant UserHomePage as "<<View>>\nUserHomePage"
+participant ShipmentsPage as "<<View>>\nShipmentsPage"
+participant ShipmentDetailsPage as "<<View>>\nShipmentDetailsPage"
+
+' Define Backend Components
+participant ShipmentController as "<<Controller>>\nShipmentController"
+participant ShipmentService as "<<Service>>\nShipmentService"
+participant ShipmentRepository as "<<Repository>>\nShipmentRepository"
+participant Database as "<<Database>>\nDatabase"
+participant EmailUtil as "<<Utility>>\nEmailUtil"
+
+' Define Models and Mappers
+participant ShipmentResponseMapper as "<<Mapper>>\nShipmentResponseMapper"
+participant "ShipmentResponseModel" as ShipmentResp
+participant "EventResponseModel" as EventResp
+
+' Interaction Flow
+ref over Client, ReactApplication, LandingPage, UserHomePage : Authentication and Navigation
+
+UserHomePage -> ShipmentsPage : Clicks 'Shipments'
+activate ShipmentsPage
+
+ShipmentsPage -> ShipmentController : GET /api/v1/movingexpress/shipments
+activate ShipmentController
+
+ShipmentController -> ShipmentService : getClientShipments()
+activate ShipmentService
+
+ShipmentService -> ShipmentRepository : findAllByClientId()
+activate ShipmentRepository
+
+ShipmentRepository -> Database : Query for client's shipments
+activate Database
+Database --> ShipmentRepository : Shipments data
+deactivate Database
+
+ShipmentRepository --> ShipmentService : List<Shipment>
+deactivate ShipmentRepository
+
+ShipmentService -> ShipmentResponseMapper : Map entities to models
+activate ShipmentResponseMapper
+ShipmentResponseMapper --> ShipmentService : List<ShipmentResponseModel>
+deactivate ShipmentResponseMapper
+
+ShipmentService --> ShipmentController : ShipmentsResponse
+deactivate ShipmentService
+
+ShipmentController --> ShipmentsPage : Display shipments
+deactivate ShipmentController
+
+ShipmentsPage -> ShipmentDetailsPage : Selects 'View Details'
+deactivate ShipmentsPage
+activate ShipmentDetailsPage
+
+ShipmentDetailsPage -> ShipmentController : GET /api/v1/movingexpress/shipments/{shipmentId}
+activate ShipmentController
+
+ShipmentController -> ShipmentService : getShipmentDetailsById(shipmentId)
+activate ShipmentService
+
+ShipmentService -> ShipmentRepository : findById(shipmentId)
+activate ShipmentRepository
+ShipmentRepository -> Database : Query for shipment details
+activate Database
+Database --> ShipmentRepository : Shipment details
+deactivate Database
+
+ShipmentRepository --> ShipmentService : Shipment details
+deactivate ShipmentRepository
+
+ShipmentService -> ShipmentResponseMapper : toResponseModel(Shipment)
+activate ShipmentResponseMapper
+ShipmentResponseMapper --> ShipmentService : ShipmentResponseModel
+deactivate ShipmentResponseMapper
+
+ShipmentService --> ShipmentController : ShipmentResponseModel
+deactivate ShipmentService
+
+ShipmentController --> ShipmentDetailsPage : Display shipment details
+deactivate ShipmentController
+
+' Cancel Shipment Sequence
+opt Cancel Shipment
+    ShipmentDetailsPage -> ShipmentController : PUT /api/v1/movingexpress/shipments/{shipmentId}
+    activate ShipmentController
+
+    ShipmentController -> ShipmentService : cancelShipment(shipmentId)
+    activate ShipmentService
+
+    activate ShipmentService
+
+    ShipmentService -> ShipmentRepository : findShipmentByShipmentIdentifier_ShipmentId(shipmentId)
+    activate ShipmentRepository
+    ShipmentRepository -> Database : SELECT shipment
+    activate Database
+    Database --> ShipmentRepository : Shipment data
+    deactivate Database
+    ShipmentRepository --> ShipmentService : Shipment data
+    deactivate ShipmentRepository
+
+    ' Cancellation Logic
+    alt Shipment Status Check
+        ShipmentService -> ShipmentService : Verify Cancellation Conditions
+    else Shipment Can be Canceled
+        ShipmentService -> ShipmentRepository : Mark Shipment as CANCELED
+        activate ShipmentRepository
+        ShipmentRepository -> Database : UPDATE shipment status
+        activate Database
+        Database --> ShipmentRepository : Update success
+        deactivate Database
+        ShipmentRepository --> ShipmentService : Confirmation
+        deactivate ShipmentRepository
+
+        ShipmentService -> EmailUtil : Send Cancellation Email
+        activate EmailUtil
+        EmailUtil --> ShipmentService : Email Sent
+        deactivate EmailUtil
+
+        ShipmentService -> EventResp : Build EventResponseModel
+        activate EventResp
+        EventResp --> ShipmentService : EventResponseModel
+        deactivate EventResp
+    end
+
+    deactivate ShipmentService
+    ShipmentService --> ShipmentController : EventResponseModel
+    deactivate ShipmentService
+    ShipmentController --> ShipmentDetailsPage : Display Cancellation Confirmation
+    deactivate ShipmentController
+end
+
+@enduml

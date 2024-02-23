@@ -1,0 +1,90 @@
+@startuml
+title Truck Driver Manifest Generation and Export Sequence Diagram
+
+actor "Truck Driver" as Driver
+
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LoginPage as "<<View>>\nLoginPage"
+participant UnassignedShipmentsPage as "<<View>>\nUnassignedShipmentsPage"
+participant MyShipmentsPage as "<<View>>\nMyShipmentsPage"
+participant ShipmentController as "<<Controller>>\nShipmentController"
+participant ShipmentService as "<<Service>>\nShipmentService"
+participant ShipmentRepository as "<<Repository>>\nShipmentRepository"
+participant ItemService as "<<Service>>\nItemService"
+participant InventoryService as "<<Service>>\nInventoryService"
+participant Database as "<<Database>>\nDatabase"
+participant InventoryItemsResponseMapper as "<<Mapper>>\nInventoryItemsResponseMapper"
+participant ShipmentInventoriesItemsResponseMapper as "<<Mapper>>\nShipmentInventoriesItemsResponseMapper"
+participant "React PDF" as ReactPDF
+
+' Response Models
+participant "InventoryItemsResponseModel" as InvItemsResp
+participant "List<InventoryItemsResponseModel>" as ListInvItemsResp
+participant "ShipmentInventoriesItemsResponseModel" as FinalResp
+
+MyShipmentsPage -> ShipmentController : GET /api/v1/movingexpress/shipments/{shipmentId}/driver-report
+activate ShipmentController
+
+ShipmentController -> ShipmentService : getShipmentDetailsForDriverReport(shipmentId)
+activate ShipmentService
+
+ShipmentService -> ShipmentRepository : findById(shipmentId)
+activate ShipmentRepository
+ShipmentRepository -> Database : SELECT * FROM shipments WHERE id = shipmentId
+activate Database
+Database --> ShipmentRepository : shipment data
+deactivate Database
+ShipmentRepository --> ShipmentService : shipment data
+deactivate ShipmentRepository
+
+ShipmentService -> InventoryService : getInventoriesByShipmentId(shipmentId)
+activate InventoryService
+InventoryService -> Database : SELECT * FROM inventories WHERE shipmentId = shipmentId
+activate Database
+Database --> InventoryService : inventories data
+deactivate Database
+InventoryService --> ShipmentService : inventories data
+deactivate InventoryService
+
+
+loop for each inventory in inventories data
+    ShipmentService -> ItemService : getItems(inventoryId)
+    activate ItemService
+    ItemService -> Database : SELECT * FROM items WHERE inventoryId = inventoryId
+    activate Database
+    Database --> ItemService : items data
+    deactivate Database
+    ItemService --> ShipmentService : items data
+    deactivate ItemService
+
+    ShipmentService -> InventoryItemsResponseMapper : mapToResponseModel(inventory, items data)
+    activate InventoryItemsResponseMapper
+    InventoryItemsResponseMapper --> InvItemsResp : inventoryItemsResponseModel
+    deactivate InventoryItemsResponseMapper
+
+    activate InvItemsResp
+    InvItemsResp --> ListInvItemsResp : add(inventoryItemsResponseModel)
+    activate ListInvItemsResp
+    deactivate InvItemsResp
+end
+ListInvItemsResp --> ShipmentService : compile(List<InventoryItemsResponseModel>)
+deactivate ListInvItemsResp
+
+ShipmentService -> ShipmentInventoriesItemsResponseMapper : mapShipmentInventoryItemsToResponseModel(shipment data, compile(List<InventoryItemsResponseModel>))
+activate ShipmentInventoriesItemsResponseMapper
+ShipmentInventoriesItemsResponseMapper --> FinalResp : Final Response Model
+activate FinalResp
+FinalResp --> ShipmentService : Final Response Model
+deactivate FinalResp
+deactivate ShipmentInventoriesItemsResponseMapper
+
+ShipmentService --> ShipmentController : FinalResp
+deactivate ShipmentService
+
+ShipmentController --> ReactPDF : Directly Download PDF Manifest with FinalResp
+activate ReactPDF
+ReactPDF --> Driver : PDF File
+deactivate ReactPDF
+
+deactivate ShipmentController
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+
+|Customer|
+start
+:Assign List to Customer;
+repeat
+  |Item List|
+  |Moving Company Movers|
+  :Put a Sticker on Item or Box;
+  |Item List|
+  :Record Item/Box Information in List;
+  |Moving Company Movers|
+  :Load Items/Boxes in List onto Truck;
+  fork
+    |Customer|
+    :Client Inspects Item/Box during Loading;
+  fork again
+    |Moving Company Movers|
+    :Company Inspects Item/Box during Loading;
+    |Item List|
+    :Check Item on List as Loaded;
+  end fork
+  |Customer|
+  while (Customer Requests Modification) is (yes)
+    |Moving Company Movers|
+    :Unload Item;
+    :Remove Sticker;
+    |Item List|
+    :Remove Item from List;
+    |Moving Company Movers|
+
+  endwhile (no)
+
+repeat while (Done Loading Items?) is (no)
+
+stop
+
+@enduml

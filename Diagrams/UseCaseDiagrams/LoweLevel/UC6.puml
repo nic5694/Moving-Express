@@ -1,0 +1,46 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor LightSeaGreen
+    BorderColor DarkSlateGray
+    ArrowColor Black
+    ActorBorderColor black
+    ActorFontName Courier
+    ActorBackgroundColor<< Human >> Gold
+}
+
+actor Client as "Client" #LightBlue
+actor "Moving Crew" as MovingCrew #Purple
+actor "Shipment Reviewer" as ShipmentReviewer #Blue
+actor "Observer" as Observer #LightCyan
+actor "Truck Driver" as VanDriver #Orange
+
+rectangle "Moving Express System" {
+    rectangle UseCases {
+      usecase "6.0 Pack Shipment" as UC6 #LightSeaGreen
+      usecase "Manage Shipment" as UC6_1 #LightSeaGreen
+      usecase "Assign Personnel" as UC6_2 #LightSeaGreen
+      usecase "Assign Truck(s)" as UC6_3 #LightSeaGreen
+
+      note "If user wants to manage the shipment information they have so far" as N1
+    }
+}
+
+UC6 <. N1 : <<extend>>
+N1 .. (UC6_1)
+UC6 <. UC6_2 : <<include>>
+UC6 <. UC6_3 : <<include>>
+
+Client --|> Observer
+Observer --> UC6_1
+
+Client ---> UC6
+
+MovingCrew -[#Orange]--> UC6
+
+UC6_2 <-- ShipmentReviewer
+UC6_3 <-- ShipmentReviewer
+
+@enduml

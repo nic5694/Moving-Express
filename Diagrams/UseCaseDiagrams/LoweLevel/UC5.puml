@@ -1,0 +1,42 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor DarkSeaGreen
+    BorderColor DarkSlateGray
+    ArrowColor Black
+    ActorBorderColor black
+    ActorFontName Courier
+    ActorBackgroundColor<< Human >> Gold
+}
+
+actor Client as "Client" #LightBlue
+actor "Observer" as Observer #LightCyan
+actor "Truck Driver" as VanDriver #Orange
+
+rectangle "Moving Express System" {
+    rectangle UseCases {
+      usecase "5.0 Monitor shipment" as UC5 #LightSeaGreen
+      usecase "5.1 Manage Shipment Operations" as UC5_1 #LightSeaGreen
+      usecase "5.2 Manage Inventory Operations" as UC5_2 #LightSeaGreen
+      usecase "5.3 Manage Observer Code Operations" as UC5_3 #LightSeaGreen
+
+      note "If users need to provide permission\nto their shipment to people without accounts" as N1
+    }
+}
+
+UC5 <.. N1 : <<Extends>>
+N1 .. UC5_3
+
+UC5 ..> UC5_1 : <<Includes>>
+UC5 ..> UC5_2 : <<Includes>>
+
+Client --|> Observer
+
+Observer -- UC5
+
+UC5_1 --[#Red]- VanDriver
+
+
+@enduml

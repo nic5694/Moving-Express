@@ -1,0 +1,128 @@
+@startuml
+title Admin Actions on Quotes Sequence Diagram
+
+actor "Shipment Reviewer / Moving Estimator" as Admin
+
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LandingPage as "<<View>>\nLandingPage"
+participant AdminQuotePage as "<<View>>\nAdminQuotePage"
+participant QuoteController as "<<Controller>>\nQuoteController"
+participant EventRequestModel as "<<Model>>\nEventRequestModel"
+participant QuoteService as "<<Service>>\nQuoteService"
+participant QuoteRepository as "<<Repository>>\nQuoteRepository"
+participant Database as "<<Database>>\nDatabase"
+participant QuoteResponseMapper as "<<Mapper>>\nQuoteResponseMapper"
+participant QuoteResponseModel as "<<Model>>\nQuoteResponseModel"
+participant EventResponseModel as "<<Model>>\nEventResponseModel"
+
+Admin -> ReactApplication : Access website
+activate ReactApplication
+
+ReactApplication -> LandingPage : render()
+activate LandingPage
+deactivate ReactApplication
+
+LandingPage -> AdminQuotePage : Admin logs in
+deactivate LandingPage
+activate AdminQuotePage
+
+AdminQuotePage -> QuoteController : GET api/v1/movingexpress/quotes?quoteStatus={status}
+activate QuoteController
+
+QuoteController -> QuoteService : getAllQuotes(quoteStatus)
+activate QuoteService
+
+QuoteService -> QuoteRepository : findAllByQuoteStatus(quoteStatus)
+activate QuoteRepository
+
+QuoteRepository -> Database : SELECT * FROM quotes WHERE status = {status}
+activate Database
+Database --> QuoteRepository : Quotes Data
+deactivate Database
+
+QuoteRepository --> QuoteService : List<Quote>
+deactivate QuoteRepository
+
+QuoteService -> QuoteResponseMapper : entitiesListToResponseList(List<Quote>)
+activate QuoteResponseMapper
+QuoteResponseMapper --> QuoteResponseModel :  Convert Entities to Response Models
+activate QuoteResponseModel
+deactivate QuoteResponseMapper
+QuoteResponseModel --> QuoteService : List<QuoteResponseModel>
+deactivate QuoteResponseModel
+
+QuoteService --> QuoteController : List<QuoteResponseModel>
+deactivate QuoteService
+
+QuoteController --> AdminQuotePage : Display all quotes filtered by {status}
+deactivate QuoteController
+
+opt Get Quote by ID
+    AdminQuotePage -> QuoteController : GET api/v1/movingexpress/quotes/{quoteId}
+    activate QuoteController
+
+    QuoteController -> QuoteService : getQuote(quoteId)
+    activate QuoteService
+
+    QuoteService -> QuoteRepository : findByQuoteIdentifier_QuoteId(quoteId)
+    activate QuoteRepository
+    QuoteRepository -> Database : SELECT * FROM quotes WHERE id = {quoteId}
+    activate Database
+    Database --> QuoteRepository : Quote Data
+    deactivate Database
+
+    QuoteRepository --> QuoteService : Quote
+    deactivate QuoteRepository
+
+    QuoteService -> QuoteResponseMapper : entityToResponseModel(Quote)
+    activate QuoteResponseMapper
+    QuoteResponseMapper --> QuoteResponseModel :  Convert Entity to Response Model
+    activate QuoteResponseModel
+    deactivate QuoteResponseMapper
+    QuoteResponseModel --> QuoteService : QuoteResponseModel
+    deactivate QuoteResponseModel
+
+    QuoteService --> QuoteController : QuoteResponseModel
+    deactivate QuoteService
+
+    QuoteController --> AdminQuotePage : Display quote details
+    deactivate QuoteController
+end
+
+opt Update Quote via Event
+    AdminQuotePage -> QuoteController : POST api/v1/movingexpress/quotes/{quoteId}/events
+    activate QuoteController
+
+    QuoteController -> EventRequestModel : createQuoteEvent(eventRequestModel, quoteId)
+    activate EventRequestModel
+    EventRequestModel -> QuoteService : Determine Event
+    activate QuoteService
+    deactivate EventRequestModel
+
+    QuoteService -> QuoteEntity : Apply event to Entity action
+    activate QuoteEntity
+    QuoteEntity --> QuoteService : Event action
+    deactivate QuoteEntity
+
+    QuoteService -> QuoteRepository : Update quote based on event
+    activate QuoteRepository
+    QuoteRepository -> Database : UPDATE quotes SET status = event WHERE id = quoteId
+    activate Database
+    Database --> QuoteRepository : Success
+    deactivate Database
+    QuoteRepository --> QuoteService : Updated quote
+    deactivate QuoteRepository
+
+    QuoteService -> EventResponseModel : Create response based on event outcome
+    activate EventResponseModel
+    EventResponseModel --> QuoteService : Event response
+    deactivate EventResponseModel
+
+    QuoteService --> QuoteController : EventResponseModel
+    deactivate QuoteService
+
+    QuoteController --> AdminQuotePage : Show action result
+    deactivate QuoteController
+end
+
+@enduml

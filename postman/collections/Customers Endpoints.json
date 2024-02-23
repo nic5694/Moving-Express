@@ -1,0 +1,22 @@
+{
+	"info": {
+		"_postman_id": "570afe4c-e791-4011-bc2b-5eb977d13d6a",
+		"name": "Customers Endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "24061727-570afe4c-e791-4011-bc2b-5eb977d13d6a"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"id": "e046b4d9-7571-4d37-8118-f8a73de47207",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,129 @@
+{
+	"info": {
+		"_postman_id": "148d3fce-3ea9-49bf-80a7-c4c4bc64a23a",
+		"name": "Quotes Endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "24061727-148d3fce-3ea9-49bf-80a7-c4c4bc64a23a"
+	},
+	"item": [
+		{
+			"name": "Request Shipment Quote",
+			"id": "c5b34cbf-02e9-49bc-b41c-101b97943266",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"pickupStreetAddress\": \"789 Elm St\",\n    \"pickupCity\": \"Villagetown\",\n    \"pickupProvince\": \"Stateland\",\n    \"pickupCountry\": \"USA\",\n    \"pickupPostalCode\": \"67890\",\n    \"pickupRoomNumber\": 303,\n    \"pickupElevator\": false,\n    \"pickupBuildingType\": \"Condo\",\n    \"destinationStreetAddress\": \"321 Oak St\",\n    \"destinationCity\": \"Cityburgh\",\n    \"destinationProvince\": \"Territoryville\",\n    \"destinationCountry\": \"CA\",\n    \"destinationPostalCode\": \"54321\",\n    \"destinationRoomNumber\": 404,\n    \"destinationElevator\": true,\n    \"destinationBuildingType\": \"House\",\n    \"firstName\": \"Alice\",\n    \"lastName\": \"Smith\",\n    \"emailAddress\": \"alice.smith@example.com\",\n    \"phoneNumber\": \"555-1234\",\n    \"contactMethod\": \"PHONE_NUMBER\",\n    \"expectedMovingDate\": \"2023-12-15\",\n    \"comment\": \"I need to move heavy stuff\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/movingexpress/quotes/request",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"movingexpress",
+						"quotes",
+						"request"
+					]
+				}
+			},
+			"response": [
+				{
+					"id": "005e5003-1ed4-4afd-b096-43350e31dc0b",
+					"name": "Request Shipment Quote",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"pickupStreetAddress\": \"789 Elm St\",\n    \"pickupCity\": \"Villagetown\",\n    \"pickupProvince\": \"Stateland\",\n    \"pickupCountry\": \"USA\",\n    \"pickupPostalCode\": \"67890\",\n    \"pickupRoomNumber\": 303,\n    \"pickupElevator\": false,\n    \"pickupBuildingType\": \"Condo\",\n    \"destinationStreetAddress\": \"321 Oak St\",\n    \"destinationCity\": \"Cityburgh\",\n    \"destinationProvince\": \"Territoryville\",\n    \"destinationCountry\": \"CA\",\n    \"destinationPostalCode\": \"54321\",\n    \"destinationRoomNumber\": 404,\n    \"destinationElevator\": true,\n    \"destinationBuildingType\": \"House\",\n    \"firstName\": \"Alice\",\n    \"lastName\": \"Smith\",\n    \"emailAddress\": \"alice.smith@example.com\",\n    \"phoneNumber\": \"555-1234\",\n    \"contactMethod\": \"PHONE_NUMBER\",\n    \"expectedMovingDate\": \"2023-12-15\",\n    \"comment\": \"I need to move heavy stuff\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/movingexpress/quotes/request",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"movingexpress",
+								"quotes",
+								"request"
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "plain",
+					"header": [
+						{
+							"key": "X-Content-Type-Options",
+							"value": "nosniff"
+						},
+						{
+							"key": "X-XSS-Protection",
+							"value": "0"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, no-store, max-age=0, must-revalidate"
+						},
+						{
+							"key": "Pragma",
+							"value": "no-cache"
+						},
+						{
+							"key": "Expires",
+							"value": "0"
+						},
+						{
+							"key": "X-Frame-Options",
+							"value": "DENY"
+						},
+						{
+							"key": "WWW-Authenticate",
+							"value": "Basic realm=\"Realm\""
+						},
+						{
+							"key": "Content-Length",
+							"value": "0"
+						},
+						{
+							"key": "Date",
+							"value": "Mon, 04 Dec 2023 20:03:40 GMT"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=60"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": []
+				}
+			]
+		}
+	]
+}

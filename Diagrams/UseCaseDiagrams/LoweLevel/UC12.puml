@@ -1,0 +1,49 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+
+skinparam note {
+ FontSize 10
+}
+skinparam usecase {
+   BackgroundColor DarkSeaGreen
+   BorderColor DarkSlateGray
+   ArrowColor Black
+   ActorBorderColor black
+   ActorBackgroundColor<< Human >> Gold
+}
+
+actor Client as "Client" #LightBlue
+actor "Shipment Reviewer" as ShipmentReviewer #Blue
+actor "Observer" as Observer #LightCyan
+
+rectangle "Moving Express System" {
+   rectangle "UseCase 12" {
+     usecase "2.0 Request Shipment" as UC2 #LightSeaGreen
+     usecase "5.0 Monitor shipment" as UC5 #LightSeaGreen
+     usecase "12.0 Cancel Shipment" as UC12 #LightSeaGreen
+     usecase "12.1 Refund Process" as UC12_1 #LightSeaGreen
+
+     note "Optional if applicable based on policy and circumstances" as N1
+   }
+}
+
+Client --|> Observer
+
+Observer -- UC12
+
+UC2 --- ShipmentReviewer
+UC12_1 --- ShipmentReviewer
+
+
+UC12 ..> UC2 : <<Includes>>
+UC12 ..> UC5 : <<Includes>>
+
+UC12 <.. N1 : <<Extends>>
+N1 .. (UC12_1)
+
+
+
+
+@enduml

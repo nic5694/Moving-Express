@@ -1,0 +1,107 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor DarkSeaGreen
+    BorderColor DarkSlateGray
+    ArrowColor Black
+    ActorBorderColor black
+    ActorFontName Courier
+    ActorBackgroundColor<< Human >> Gold
+}
+
+actor  "Anonymous Client" #Blue
+actor  "Anonymous Loader" #Yellow
+actor  "Client" #Green
+actor  "Van Driver" #Red
+actor  "Moving Estimator" #Orange
+actor  "System Administrator" as Admin #Pink
+
+
+rectangle "Moving Express System" {
+    rectangle "Inventory Subsystem" {
+      usecase "4.1 Add Item to Inventory"
+      usecase "4.2 Remove Item From Inventory"
+      usecase "5.1 Create Trailer Inventory"
+      usecase "6.1 Create Room Inventory"
+      usecase "Update Item"
+      usecase "5.2 Update Trailer Inventory"
+      usecase "6.2 Update Room Inventory"
+      usecase "4.3 View Item"
+      usecase "5.3 View Trailer Inventory"
+      usecase "6.3 View Room Inventory"
+      usecase "4.4 Delete Item"
+      usecase "5.4 Delete Trailer Inventory"
+      usecase "6.5 Delete Room Inventory"
+
+    }
+}
+
+
+"Client" -[#Blue]-> "4.1 Add Item to Inventory"
+"Client" -[#Blue]-> "4.2 Remove Item From Inventory"
+"Client" -[#Blue]-> "5.1 Create Trailer Inventory"
+"Client" -[#Blue]-> "6.1 Create Room Inventory"
+"Client" -[#Blue]-> "Update Item"
+"Client" -[#Blue]-> "5.2 Update Trailer Inventory"
+"Client" -[#Blue]-> "6.2 Update Room Inventory"
+"Client" -[#Blue]-> "4.4 Delete Item"
+"Client" -[#Blue]-> "5.4 Delete Trailer Inventory"
+"Client" -[#Blue]-> "6.5 Delete Room Inventory"
+
+
+"Anonymous Client" -[#Green]-> "4.3 View Item"
+"Anonymous Client" -[#Green]-> "5.3 View Trailer Inventory"
+"Anonymous Client" -[#Green]-> "6.3 View Room Inventory"
+
+"Van Driver" -[#Purple]-> "4.1 Add Item to Inventory"
+"Van Driver" -[#Purple]-> "5.1 Create Trailer Inventory"
+"Van Driver" -[#Purple]-> "6.1 Create Room Inventory"
+"Van Driver" -[#Purple]-> "Update Item"
+"Van Driver" -[#Purple]-> "5.2 Update Trailer Inventory"
+"Van Driver" -[#Purple]-> "6.2 Update Room Inventory"
+"Van Driver" -[#Purple]-> "4.3 View Item"
+"Van Driver" -[#Purple]-> "5.3 View Trailer Inventory"
+"Van Driver" -[#Purple]-> "6.3 View Room Inventory"
+"Van Driver" -[#Purple]-> "6.5 Delete Room Inventory"
+"Van Driver" -[#Purple]-> "5.4 Delete Trailer Inventory"
+
+
+"Moving Estimator" -[#Red]-> "4.3 View Item"
+"Moving Estimator" -[#Red]-> "5.3 View Trailer Inventory"
+"Moving Estimator" -[#Red]-> "6.3 View Room Inventory"
+"Moving Estimator" -[#Red]-> "4.1 Add Item to Inventory"
+"Moving Estimator" -[#Red]-> "4.2 Remove Item From Inventory"
+"Moving Estimator" -[#Red]-> "5.1 Create Trailer Inventory"
+"Moving Estimator" -[#Red]-> "6.1 Create Room Inventory"
+
+
+
+"Anonymous Loader" -[#Orange]-> "4.1 Add Item to Inventory"
+"Anonymous Loader" -[#Orange]-> "5.1 Create Trailer Inventory"
+"Anonymous Loader" -[#Orange]-> "6.1 Create Room Inventory"
+"Anonymous Loader" -[#Orange]-> "Update Item"
+"Anonymous Loader" -[#Orange]-> "5.2 Update Trailer Inventory"
+"Anonymous Loader" -[#Orange]-> "6.2 Update Room Inventory"
+"Anonymous Loader" -[#Orange]-> "4.3 View Item"
+"Anonymous Loader" -[#Orange]-> "5.3 View Trailer Inventory"
+"Anonymous Loader" -[#Orange]-> "6.3 View Room Inventory"
+"Anonymous Loader" -[#Orange]-> "4.2 Remove Item From Inventory"
+
+
+
+Admin --|> "Client"
+Admin --|> "Anonymous Client"
+Admin --|> "Anonymous Loader"
+Admin --|> "Van Driver"
+Admin --|> "Moving Estimator"
+
+
+
+"Client" --|> "Anonymous Client"
+
+
+/' Admin --> "Approve shipment" '/
+
+@enduml

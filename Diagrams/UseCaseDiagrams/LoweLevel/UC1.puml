@@ -1,0 +1,45 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+
+skinparam usecase {
+    BackgroundColor DarkSeaGreen
+    BorderColor DarkSlateGray
+    ArrowColor Black
+    ActorBorderColor black
+    ActorFontName Courier
+    ActorBackgroundColor<< Human >> Gold
+}
+
+actor Client as "Client" #LightBlue
+actor "Shipment Reviewer" as ShipmentReviewer #Blue
+actor "Moving Estimator" as MovingEstimator #LightGreen
+
+
+rectangle "Moving Express System" {
+    rectangle "UseCases 1"  {
+      usecase "1.0 Request a Quote" as UC1 #LightSeaGreen
+      usecase "1.1 Review quote Request" as UC1_1  #LightSeaGreen
+      usecase "1.2 Manage quote Request" as UC1_2  #LightSeaGreen
+
+
+/'
+      note "If the quote was refused" as N1
+'/
+    }
+}
+
+Client -- UC1
+
+UC1_1 --- ShipmentReviewer
+UC1_2 --- ShipmentReviewer
+
+UC1_1 -[#LightSeaGreen]-- MovingEstimator
+UC1_2 -[#LightSeaGreen]-- MovingEstimator
+
+UC1 ..> UC1_1  : <<Includes>>
+UC1 ..> UC1_2  : <<Includes>>
+
+
+@enduml

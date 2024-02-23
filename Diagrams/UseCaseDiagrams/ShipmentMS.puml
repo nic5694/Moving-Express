@@ -1,0 +1,86 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor DarkSeaGreen
+    BorderColor DarkSlateGray
+    ArrowColor Black
+    ActorBorderColor black
+    ActorFontName Courier
+    ActorBackgroundColor<< Human >> Gold
+}
+
+actor  "Anonymous Client" #Blue
+actor  "Anonymous Loader" #Yellow
+actor  "Client" #Green
+actor  "Van Driver" #Red
+actor  "Moving Estimator" #Orange
+actor  "System Administrator" as Admin #Pink
+
+
+rectangle "Moving Express System" {
+    rectangle "Shipment Subsystem" {
+      usecase "2.1 Create shipments"
+      usecase "2.2 Approve shipment"
+      usecase "2.3 Update shipment details"
+      usecase "2.4 Cancel shipment"
+      usecase "2.7 Generate shipment manifest"
+      usecase "2.5 View shipment details"
+      usecase "3.2 Verify shipment weight"
+      usecase "2.5.1 Check Inventory condition"
+      usecase "3.1 Weight Trailer"
+      usecase "2.6 Update status of shipment"
+      usecase "2.8 Invite anonymous loading helpers or clients"
+      usecase "2.9 Join shipment"
+      usecase "3.3 Generate manifest for van driver's regulatory compliance"
+      usecase "3.4 Generate manifest for client's records and unpacking assistance"
+      usecase "3.5 Track item/box status (packed, loaded, unloaded)"
+      usecase "3.6 Get cost estimation based on weight"
+    }
+}
+
+
+
+"Client" -[#Blue]-> "2.1 Create shipments"
+"Client" -[#Blue]-> "2.3 Update shipment details"
+"Client" -[#Blue]-> "2.4 Cancel shipment"
+"Client" -[#Blue]-> "2.7 Generate shipment manifest"
+"Client" -[#Blue]-> "3.2 Verify shipment weight"
+"Client" -[#Blue]-> "3.4 Generate manifest for client's records and unpacking assistance"
+"Client" -[#Blue]-> "3.5 Track item/box status (packed, loaded, unloaded)"
+"Client" -[#Blue]-> "3.6 Get cost estimation based on weight"
+"Client" -[#Blue]-> "2.5 View shipment details"
+"Client" -[#Blue]-> "2.5.1 Check Inventory condition"
+
+"Anonymous Client" -[#Green]--> "2.9 Join shipment"
+"Anonymous Client" -[#Green]--> "2.5 View shipment details"
+"Anonymous Client" -[#Green]--> "3.2 Verify shipment weight"
+"Anonymous Client" -[#Green]--> "3.5 Track item/box status (packed, loaded, unloaded)"
+"Anonymous Client" -[#Green]--> "3.6 Get cost estimation based on weight"
+"Anonymous Client" -[#Green]--> "2.5.1 Check Inventory condition"
+
+"Van Driver" -[#Purple]--> "2.7 Generate shipment manifest"
+"Van Driver" -[#Purple]--> "2.8 Invite anonymous loading helpers or clients"
+"Van Driver" -[#Purple]--> "3.2 Verify shipment weight"
+"Van Driver" -[#Purple]--> "2.6 Update status of shipment"
+"Van Driver" -[#Purple]--> "3.3 Generate manifest for van driver's regulatory compliance"
+"Van Driver" -[#Purple]--> "3.1 Weight Trailer"
+"Van Driver" -[#Purple]--> "2.5.1 Check Inventory condition"
+
+"Moving Estimator" -[#Red]--> "2.1 Create shipments"
+"Moving Estimator" -[#Red]--> "3.6 Get cost estimation based on weight"
+
+"Anonymous Loader" -[#Orange]--> "2.9 Join shipment"
+"Anonymous Loader" -[#Orange]--> "2.5.1 Check Inventory condition"
+
+Admin --|> "Client"
+Admin --|> "Anonymous Client"
+Admin --|> "Anonymous Loader"
+Admin --|> "Van Driver"
+Admin --|> "Moving Estimator"
+
+
+Admin --> "2.2 Approve shipment"
+
+@enduml

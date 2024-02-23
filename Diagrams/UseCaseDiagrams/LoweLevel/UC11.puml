@@ -1,0 +1,44 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+
+skinparam note {
+ FontSize 10
+}
+skinparam usecase {
+   BackgroundColor DarkSeaGreen
+   BorderColor DarkSlateGray
+   ArrowColor Black
+   ActorBorderColor black
+   ActorFontName Courier
+   ActorBackgroundColor<< Human >> Gold
+}
+
+actor "Truck Driver" as VanDriver #Orange
+actor Client as "Client" #LightBlue
+actor "Observer" as Observer #LightCyan
+
+
+rectangle "Moving Express System" {
+   rectangle "UseCase 11" {
+     usecase "5.0 Monitor shipment" as UC5 #LightSeaGreen
+     usecase "11.0 Generate Shipment Reports" as UC11 #LightSeaGreen
+     usecase "11.1 Manage Shipment Report Data" as UC11_1 #LightSeaGreen
+
+
+     note "Optional if user (Truck Driver) needs to edit the reports" as N2
+
+   }
+}
+
+Client --|> Observer
+Observer -[#Blue]- UC11
+UC11_1 --- VanDriver
+
+UC11 ..> UC5 : <<Includes>>
+
+UC11 <.. N2 : <<Extends>>
+N2 .. (UC11_1)
+
+@enduml

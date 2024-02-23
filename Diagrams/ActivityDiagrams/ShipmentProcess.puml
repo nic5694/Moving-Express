@@ -1,0 +1,78 @@
+@startuml
+|Customer|
+start
+:Customer submits shipment request with details;
+|System|
+:Send estimator to assess the shipment;
+|System|
+:Evaluate the amount of items;
+|Customer|
+while (Client accepts the evaluation?) is (no)
+|System|
+  :Evaluate the amount of items with the client;
+  |Customer|
+  if (Client decides to close shipment process?) then (yes)
+  |System|
+    :Delete the report;
+    :Cancel the entire shipping process;
+    stop
+  endif
+endwhile
+|System|
+:Estimation sent to and reviewed by the company;
+|Truck Driver|
+:Assign Truck Driver to client's moving delivery;
+|Truck Driver|
+:Weigh the empty truck before arriving on-site;
+|Truck Driver|
+while (Inventory is too big?) is (yes)
+  :Repeat assignation of truck steps;
+endwhile
+|Truck Driver|
+:Load items onto the truck;
+|Customer|
+:Customer provides a signature upon completion;
+if (Client refuses) then (yes)
+|System|
+  :Cancel the entire shipping process;
+  end
+else (no)
+  :Generate receipt and report with a tracking code;
+endif
+|Truck Driver|
+:Bring the loaded truck to a weighing spot;
+|Truck Driver|
+:Weigh the loaded truck;
+|Truck Driver|
+:Calculate the weight difference manually;
+|Truck Driver|
+:Write down a report of weight changes;
+|System|
+:Submit the weight change report to the company;
+|System|
+:Based on market prices, calculate the shipment cost;
+|Customer|
+if (Client accepts price?) then (yes)
+|System|
+  :Forward the price to the client for payment;
+  |System|
+  |Customer|
+  if (Client refuses) then (yes)
+    |System|
+    :Cancel the entire shipping process;
+    end
+  else (no)
+    |Customer|
+    :Payment process;
+  endif
+    |System|
+else (no)
+  :Cancel the entire shipping process;
+  :Forward a cancellation fee to the client;
+      |Customer|
+  :Client pays the fee;
+  stop
+endif
+|Customer|
+stop
+@enduml

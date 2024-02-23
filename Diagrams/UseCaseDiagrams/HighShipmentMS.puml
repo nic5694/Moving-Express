@@ -1,0 +1,64 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor DarkSeaGreen
+    BorderColor DarkSlateGray
+    ArrowColor Black
+    ActorBorderColor black
+    ActorFontName Courier
+    ActorBackgroundColor<< Human >> Gold
+}
+
+actor Client as "Client" #LightBlue
+actor "Moving Estimator" as MovingEstimator #LightGreen
+actor "Truck Driver" as VanDriver #Orange
+actor "Shipment Reviewer" as ShipmentReviewer #Blue
+actor "Observer" as Observer #LightCyan
+
+rectangle "Moving Express System" {
+    rectangle UseCases {
+      usecase "1.0 Request a Quote" as UC1 #LightSeaGreen
+      usecase "2.0 Request Shipment" as UC2 #LightSeaGreen
+      usecase "3.0 Estimate Item Value" as UC3 #LightSeaGreen
+      usecase "4.0 Estimate Shipment" as UC4 #LightSeaGreen
+      usecase "5.0 Monitor shipment" as UC5 #LightSeaGreen
+      usecase "8.0 Transport Shipment" as UC8 #LightSeaGreen
+      usecase "6.0 Packs Shipment" as UC6 #LightSeaGreen
+      usecase "7.0 Load Shipment" as UC7 #LightSeaGreen
+      usecase "9.0 Unload Shipment" as UC9 #LightSeaGreen
+      usecase "10.0 Unpack Shipment" as UC10 #LightSeaGreen
+      usecase "11.0 Generate Shipment Reports" as UC11 #LightSeaGreen
+      usecase "12.0 Cancel Shipment" as UC12 #LightSeaGreen
+    }
+}
+
+Client --|> Observer
+
+Client --- UC12
+Client -- UC1
+Client --- UC3
+Client --- UC2
+Client -- UC11
+
+
+UC2 -[#LightSeaGreen]- MovingEstimator
+UC4 -[#LightSeaGreen]- MovingEstimator
+UC5 -[#LightSeaGreen]- MovingEstimator
+
+Observer -[#Orange]- UC5
+Observer -[#Orange] UC6
+Observer -[#Orange] UC7
+Observer -[#Orange] UC9
+Observer -[#Orange]- UC10
+
+VanDriver --[#Purple]- UC11
+UC5 --[#Purple]-- VanDriver
+VanDriver -[#Purple]- UC8
+
+UC2 -[#Blue]- ShipmentReviewer
+UC1 -[#Blue]- ShipmentReviewer
+UC12 -[#Blue]- ShipmentReviewer
+
+@enduml

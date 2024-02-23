@@ -1,0 +1,210 @@
+@startuml
+title Shipment Class Diagram within Moving Express Subdomain
+
+package "shipmentsubdomain" {
+    package "businesslayer" {
+        interface ShipmentService {
+        + createShipment(QuoteResponseModel) : ShipmentResponseModel
+        + getAllShipments(Optional<String>, Optional<String>) : List<ShipmentResponseModel>
+        + updateShipmentStatus(ShipmentUpdateRequest) : ShipmentResponseModel
+        + getShipment(String) : ShipmentResponseModel
+        + deleteShipment(String) : void
+        + getShipmentDetailsByObserverCode(String) : ShipmentRequestModel
+        + getAllReportInformation(String) : AggregatedShipmentResponseModel
+        + getAllReportInformationForObservers(String) : AggregatedShipmentResponseModel
+        + getAllManifestInformationForObservers(String) : AggregatedShipmentResponseModel
+        + getUnassignedShipments() : List<ShipmentResponseModel>
+        + getShipmentsByDriverId(String) : List<ShipmentResponseModel>
+        + cancelShipment(String) : EventResponseModel
+        + assignTruckAndDriverToShipment(AssignDriverAndTruckToShipmentRequest) : ShipmentResponseModel
+        + setShipmentFinalWeight(FinalWeightRequestModel) : ShipmentResponseModel
+        + unassignShipment(String, String) : ShipmentResponseModel
+        + getShipmentDetails(String) : ShipmentObserversInventoriesItemsResponseModel
+        + getShipmentDetailsForDriverReport(String) : ShipmentInventoriesItemsResponseModel
+
+
+        }
+
+        class ShipmentServiceImpl {
+        - shipmentRepository : ShipmentRepository
+        - quoteResponseToShipmentMapper : QuoteResponseToShipmentMapper
+        - shipmentResponseMapper : ShipmentResponseMapper
+        - addressMapper : AddressMapper
+        - emailUtil : EmailUtil
+        + createShipment(QuoteResponseModel) : ShipmentResponseModel
+        + getAllShipments(Optional<String>, Optional<String>) : List<ShipmentResponseModel>
+        + updateShipmentStatus(ShipmentUpdateRequest) : ShipmentResponseModel
+        + getShipment(String) : ShipmentResponseModel
+        + deleteShipment(String) : void
+        + getShipmentDetailsByObserverCode(String) : ShipmentRequestModel
+        + getAllReportInformation(String) : AggregatedShipmentResponseModel
+        + getAllReportInformationForObservers(String) : AggregatedShipmentResponseModel
+        + getAllManifestInformationForObservers(String) : AggregatedShipmentResponseModel
+        + getUnassignedShipments() : List<ShipmentResponseModel>
+        + getShipmentsByDriverId(String) : List<ShipmentResponseModel>
+        + cancelShipment(String) : EventResponseModel
+        + assignTruckAndDriverToShipment(AssignDriverAndTruckToShipmentRequest) : ShipmentResponseModel
+        + setShipmentFinalWeight(FinalWeightRequestModel) : ShipmentResponseModel
+        + unassignShipment(String, String) : ShipmentResponseModel
+        + getShipmentDetails(String) : ShipmentObserversInventoriesItemsResponseModel
+        + getShipmentDetailsForDriverReport(String) : ShipmentInventoriesItemsResponseModel
+        }
+    }
+
+    package "datalayer" {
+        class Shipment {
+            - id : Integer
+            - shipmentIdentifier : ShipmentIdentifier
+            - userId : String
+            - driverId : String
+            - email : String
+            - phoneNumber : String
+            - truckIdentifier : TruckIdentifier
+            - status : Status
+            - expectedMovingDate : LocalDate
+            - actualMovingDate : LocalDate
+            - approximateWeight : double
+            - weight : double
+            - name : String
+            - pickupAddress : Address
+            - destinationAddress : Address
+        }
+
+        class Address {
+            - id : Integer
+            - addressIdentifier : AddressIdentifier
+            - city : String
+            - streetAddress : String
+            - country : Country
+            - postalCode : String
+        }
+
+        enum Status {
+            QUOTED
+            LOADING
+            TRANSIT
+            DELIVERED
+        }
+
+        enum Country {
+            USA
+            CA
+        }
+
+        interface ShipmentRepository {
+            + findShipmentByUserId(userId: String) : List<Shipment>
+            + findShipmentByEmail(email: String) : List<Shipment>
+            + findById(shipmentId: String) : Shipment
+            + save(shipment: Shipment) : Shipment
+            + deleteById(shipmentId: String) : void
+            + findShipmentByDriverId(driverId: String) : List<Shipment>
+        }
+
+        interface AddressRepository {
+            + save(address: Address) : Address
+        }
+    }
+
+    package "datamapperlayer" {
+        interface AddressMapper {
+            + toAddress(streetAddress: String, city: String, postalCode: String, country: Country) : Address
+        }
+
+        interface QuoteResponseToShipmentMapper {
+            + toShipment(quoteResponse: QuoteResponseModel, addressMapper: AddressMapper) : Shipment
+        }
+
+        interface ShipmentResponseMapper {
+            + entityToResponseModel(shipment: Shipment) : ShipmentResponseModel
+        }
+    }
+
+    package "presentationlayer" {
+        class ShipmentResponseModel {
+            - shipmentId : String
+            - pickupAddress : Address
+            - destinationAddress : Address
+            - userId : String
+            - truckId : String
+            - status : Status
+            - shipmentName : String
+            - approximateWeight : double
+            - weight : double
+            - email : String
+            - phoneNumber : String
+        }
+
+        class ShipmentRequestModel {
+            - pickupAddressId : String
+            - destinationAddressId : String
+            - clientId : String
+            - truckId : String
+            - status : Status
+        }
+
+        class ShipmentUpdateRequest {
+            - shipmentId : String
+            - status: Status
+            - departureAddress: String
+            - arrivalAddress: String
+            - estimatedDeparture: LocalDateTime
+            - estimatedArrival: LocalDateTime
+        }
+
+        class AssignDriverAndTruckToShipmentRequest {
+            - private shipmentId: String ;
+            - private vin: TruckIdentifier ;
+            - private driverId: String ;
+
+        }
+        class AggregatedShipmentResponseModel {
+            - shipmentDetails : ShipmentResponseModel
+            - ItemDetails : List<ItemResponseModel>
+            - InventoryDetails : List<InventoryResponseModel>
+
+        }
+
+       class ShipmentController {
+            - shipmentService: ShipmentService
+            + getAllShipments(requestParams: Map<String, String>): ResponseEntity<List<ShipmentResponseModel>>
+            + createShipment(quoteResponseModel: QuoteResponseModel): ResponseEntity<ShipmentResponseModel>
+            + updateShipmentStatus(shipmentId: String, shipmentRequestModel: ShipmentRequestModel): ResponseEntity<ShipmentResponseModel>
+            + getShipment(shipmentId: String): ResponseEntity<ShipmentResponseModel>
+            + cancelShipment(shipmentId: String): ResponseEntity<EventResponseModel>
+            + getShipmentDetailsByObserverCode(observerCode: String): ResponseEntity<ShipmentResponseModel>
+            + getShipmentDetails(shipmentId: String): ResponseEntity<ShipmentObserversInventoriesItemsResponseModel>
+            + getShipmentDetailsForDriverReport(shipmentId: String): ResponseEntity<ShipmentInventoriesItemsResponseModel>
+            + getUnassignedShipments(): ResponseEntity<List<ShipmentResponseModel>>
+            + assignTruckAndDriverToShipment(assignDriverAndTruckToShipmentRequest: AssignDriverAndTruckToShipmentRequest): ResponseEntity<ShipmentResponseModel>
+            + setShipmentFinalWeight(finalWeightRequestModel: FinalWeightRequestModel): ResponseEntity<ShipmentResponseModel>
+            + unassignShipment(shipmentId: String, driverId: OidcUser): ResponseEntity<ShipmentResponseModel>
+            + getShipmentsByDriverId(driverId: OidcUser): ResponseEntity<List<ShipmentResponseModel>>
+        }
+
+    ' Relationships
+    ShipmentServiceImpl -down-|> ShipmentService : implements
+    ShipmentServiceImpl -down-> ShipmentRepository : uses
+    ShipmentServiceImpl -down-> QuoteResponseToShipmentMapper : uses
+    ShipmentServiceImpl -down-> ShipmentResponseMapper : uses
+    ShipmentServiceImpl -down-> AddressMapper : uses
+    ShipmentServiceImpl -down-> AddressRepository : uses
+    ShipmentServiceImpl -down-> EmailUtil : uses
+    ShipmentRepository -down-> Shipment : accesses
+    AddressRepository -down-> Address : accesses
+    QuoteResponseToShipmentMapper -right-> Shipment : maps
+    ShipmentResponseMapper -left-> Shipment : maps
+    AddressMapper -left-> Address : maps
+    ShipmentController -right-> ShipmentService : uses
+    ShipmentController -down-> ShipmentResponseModel : manages
+    ShipmentController -down-> ShipmentRequestModel : receives
+    ShipmentController -down-> ShipmentUpdateRequest : receives
+    ShipmentController -down-> AssignDriverAndTruckToShipmentRequest : receives
+    ShipmentController -down-> AggregatedShipmentResponseModel : manages
+    AggregatedShipmentResponseModel -right-> ShipmentResponseModel : contains
+
+    ' Enum Relationships
+    Shipment -down-^ Status : has status
+    Address -down-^ Country : located in
+}
+
+@enduml

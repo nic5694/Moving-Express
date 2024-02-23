@@ -1,0 +1,120 @@
+@startuml
+!include <archimate/Archimate>
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!include DEVICONS/java.puml
+!include DEVICONS/mysql.puml
+!include DEVICONS/react.puml
+!include DEVICONS/html5.puml
+!include DEVICONS/javascript.puml
+!define DEVICONS2 https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons2
+!include DEVICONS2/google.puml
+!include DEVICONS2/npm_original_wordmark.puml
+!define RECTANGLE_BORDER_COLOR white
+!include DEVICONS2/tailwindcss.puml
+!include DEVICONS2/typescript.puml
+!define SPRITES https://raw.githubusercontent.com/plantuml-stdlib/gilbarbara-plantuml-sprites/v1.1/sprites
+!include SPRITES/auth0.puml
+
+skinparam rectangle {
+    BorderColor <<RECTANGLE_BORDER_COLOR>>
+}
+
+AddElementTag("webApp", $shape=RoundedBoxShape(), $bgColor="#f06529", $fontColor="white", $legendText="Web Application")
+AddElementTag("authPage", $shape=RoundedBoxShape(), $bgColor="gray", $fontColor="white", $legendText="Auth0 Page")
+AddElementTag("webSite", $shape=RoundedBoxShape(), $bgColor="#61DAFB", $fontColor="#333333", $legendText="Single-Page Application")
+AddElementTag("library", $shape=RoundedBoxShape(), $bgColor="#82A5AA", $fontColor="white", $legendText="Libraries")
+AddElementTag("service", $shape=square(), $bgColor="#557C99", $fontColor="white", $legendText="Service\square")
+AddRelTag("a_rel", $lineColor="Gray",$legendText="Application Relationships")
+
+System_Boundary(ReactApplication, "ReactApplication") {
+    Container(index, "Index Page", "HTML", "The entry point to the React Application.", $sprite="html5", $tags="webApp")
+
+    rectangle "Components" as Components {
+        Container(landingpage, "Landing Page", "TSX", "Displays the landing page of the application.", $sprite="typescript", $tags="webSite")
+        Container(userhomepage, "User Home Page", "TSX", "Displays user shipment flow.", $sprite="typescript", $tags="webSite")
+        Container(shipmentquote, "Shipment Quote", "TSX", "Provides shipment quotations.", $sprite="typescript", $tags="webSite")
+        Container(observerShipmentDetails, "Observer Shipment Details", "TSX", "Provides shipment observers the ability to view, modify and delete items from the shipment.", $sprite="typescript", $tags="webSite")
+        Container(profilepage, "Profile Page", "TSX", "Manages user profile.", $sprite="typescript", $tags="webSite")
+        Container(contactuspage, "Contact Us Page", "TSX", "Provides contact information.", $sprite="typescript", $tags="webSite")
+        Container(shipmentspage, "Shipments Page", "TSX", "Displays all of the clients shipments.", $sprite="typescript", $tags="webSite")
+        Container(shipmentdetails, "Shipment Details Page", "TSX", "Provides detailed view of shipments.", $sprite="typescript", $tags="webSite")
+        Container(shipmentreviewer, "Shipment Reviewer Page", "TSX", "Reviews shipment details.", $sprite="typescript", $tags="webSite")
+        Container(shipmentestimator, "Shipment Estimator Page", "TSX", "Estimates shipment costs.", $sprite="typescript", $tags="webSite")
+        Container(truckdriverspage, "Truck Drivers Page", "TSX", "Manages truck driver assignments.", $sprite="typescript", $tags="webSite")
+        Container(unassignedshipmentspage, "Unassigned Shipments Page", "TSX", "Displays unassigned shipments.", $sprite="typescript", $tags="webSite")
+        Container(myshipmentspage, "My Shipments Page", "TSX", "Displays shipments assigned to a truck driver.", $sprite="typescript", $tags="webSite")
+    }
+
+    rectangle "Libraries" as Libraries {
+        Container(reactRouter, "React Router", "", "Library for handling routing in React applications.", $sprite="npm_original_wordmark", $tags="library")
+        Container(axios, "Axios", "", "Library for making HTTP requests.", $sprite="npm_original_wordmark", $tags="library")
+        Container(reactPDF, "React PDF", "Javscript library", "Generates the PDF reports for customers, observers and truck drivers.", $sprite="npm_original_wordmark", $tags="library")
+    }
+}
+
+rectangle "Services" as Services {
+    Container(movingExpress, "Moving Express", "", "Main endpoint for HTTP requests.", $tags="service", $sprite="java")
+    Container(loginpage, "Login Page", "TSX", "Handles user login.", $sprite="auth0", $tags="authPage")
+    Container(signuppage, "Sign Up Page", "TSX", "Handles user registration.", $sprite="auth0", $tags="authPage")
+}
+ 
+Rel(index, landingpage, "Starts with", $tags="a_rel")
+Rel(landingpage, movingExpress, "Makes Request to be redirected to Auth0 login page", $tags="a_rel")
+Rel(landingpage, movingExpress, "Makes Request to be redirected to Auth0 signup page", $tags="a_rel")
+Rel(movingExpress, loginpage, "Redirects to Auth0 login page", $tags="a_rel")
+Rel(movingExpress, signuppage, "Redirects to Auth0 signup page", $tags="a_rel")
+Rel(landingpage, shipmentquote, "Navigates to Shipment Quote", $tags="a_rel")
+Rel(landingpage, contactuspage, "Navigates to Contact Us Page", $tags="a_rel")
+Rel(reactRouter, landingpage, "Routes to Landing Page", $tags="a_rel")
+Rel(landingpage, observerShipmentDetails, "Navigates to Observer Shipment Details", $tags="a_rel")
+Rel(reactPDF,observerShipmentDetails, "Receives request to generate PDF report", $tags="a_rel")
+Rel(reactPDF,truckdriverspage, "Receives request to to generate PDF report", $tags="_rel")
+
+
+Rel(shipmentquote, userhomepage, "Navigates to User Home", $tags="a_rel")
+Rel(contactuspage, userhomepage, "Navigates to User Home", $tags="a_rel")
+
+
+Rel(movingExpress, shipmentestimator, "Redirects Estimators with Shipemnt_Estimator role", $tags="a_rel")
+Rel(movingExpress, shipmentreviewer, "Redirects Reviewers with Shipment_Reviewer role", $tags="a_rel")
+Rel(movingExpress, truckdriverspage, "Redirects Truck drivers with Truck_Driver role", $tags="a_rel")
+Rel(truckdriverspage, unassignedshipmentspage, "Navigates Unassigned Shipments", $tags="a_rel")
+Rel(truckdriverspage, myshipmentspage, "Navigates to My Shipments", $tags="a_rel")
+
+Rel(userhomepage, shipmentquote, "Requests Shipment Quote", $tags="a_rel")
+Rel(userhomepage, shipmentspage, "Navigates to Shipments", $tags="a_rel")
+Rel(shipmentspage, movingExpress, "Fetches client's shipments", $tags="a_rel")
+
+Rel(userhomepage, contactuspage, "Navigate to contact page", $tags="a_rel")
+Rel(userhomepage, profilepage, "Navigate to profile page", $tags="a_rel")
+
+Rel(shipmentspage, shipmentdetails, "Views Shipment Details", $tags="a_rel")
+
+Rel(shipmentreviewer, axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(shipmentestimator, axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(unassignedshipmentspage,axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(myshipmentspage, axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(shipmentdetails, axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(unassignedshipmentspage,  axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(profilepage,  axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(truckdriverspage,  axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(shipmentreviewer,  axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(myshipmentspage,  axios, "Uses Axios for HTTP requests", $tags="library_rel")
+
+Rel(profilepage, movingExpress, "Interacts with Moving Express", $tags="a_rel")
+Rel(shipmentreviewer, movingExpress, "Interacts with Moving Express", $tags="a_rel")
+Rel(shipmentestimator, movingExpress, "Interacts with Moving Express", $tags="a_rel")
+Rel(unassignedshipmentspage, movingExpress, "Fetches data from Moving Express", $tags="a_rel")
+Rel(myshipmentspage, movingExpress, "Fetches data from Moving Express", $tags="a_rel")
+Rel(shipmentdetails, movingExpress, "Fetches specific shipment data from Moving Express", $tags="a_rel")
+Rel(movingExpress, userhomepage, "Redirects users to the UserHomePage")
+
+Rel(shipmentquote, axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(shipmentspage, axios, "Uses Axios for HTTP requests", $tags="library_rel")
+Rel(shipmentquote, movingExpress, "Sends requests to Moving Express", $tags="a_rel")
+Rel(shipmentspage, movingExpress, "Fetches shipment data from Moving Express", $tags="a_rel")
+
+SHOW_LEGEND()
+@enduml
+gi

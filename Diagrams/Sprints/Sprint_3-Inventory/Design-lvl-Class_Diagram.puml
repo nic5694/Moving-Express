@@ -1,0 +1,217 @@
+@startuml
+title Shipment Class Diagram within Moving Express Subdomain
+
+package "InventorySubdomain" {
+    package "businesslayer" {
+        interface InventoryService{
+            + getInventories(shipmentId: String): List<InventoryResponseModel>
+            + getInventoryById(shipmentId: String, inventoryId: String): InventoryResponseModel
+            + addInventory(shipmentId: String): InventoryResponseModel
+            + editInventory(shipmentId: String, inventoryId: String, inventoryRequestModel: InventoryRequestModel): InventoryResponseModel
+            + deleteInventory(shipmentId: String, inventoryId: String): void
+        }
+
+        class InventoryServiceImpl{
+            - inventoryRepository: InventoryRepository
+            - inventoryResponseMapper: InventoryResponseMapper
+            - inventoryRequestMapper: InventoryRequestMapper
+            + getInventories(shipmentId: String): List<InventoryResponseModel>
+            + getInventoryById(shipmentId: String, inventoryId: String): InventoryResponseModel
+            + addInventory(shipmentId: String): InventoryResponseModel
+            + editInventory(shipmentId: String, inventoryId: String, inventoryRequestModel: InventoryRequestModel): InventoryResponseModel
+            + deleteInventory(shipmentId: String, inventoryId: String): void
+        }
+
+        interface ItemService{
+            + getItems(shipmentId: String, inventoryId: String): List<ItemResponseModel>
+            + getItem(shipmentId: String, inventoryId: String, itemId: String): ItemResponseModel
+            + addItem(shipmentId: String, inventoryId: String): ItemResponseModel
+            + updateItem(shipmentId: String, inventoryId: String, itemId: String, itemRequestModel: ItemRequestModel): ItemResponseModel
+            + deleteItem(shipmentId: String, inventoryId: String, itemId: String): void
+        }
+
+        class ItemServiceImpl{
+            - itemRepository: ItemRepository
+            - itemResponseMapper: ItemResponseMapper
+            - itemRequestMapper: ItemRequestMapper
+            + getItems(shipmentId: String, inventoryId: String): List<ItemResponseModel>
+            + getItem(shipmentId: String, inventoryId: String, itemId: String): ItemResponseModel
+            + addItem(shipmentId: String, inventoryId: String): ItemResponseModel
+            + updateItem(shipmentId: String, inventoryId: String, itemId: String, itemRequestModel: ItemRequestModel): ItemResponseModel
+            + deleteItem(shipmentId: String, inventoryId: String, itemId: String): void
+        }
+    }
+
+    package "datalayer" {
+
+        class Inventory {
+            - id : Integer
+            - inventoryIdentifier : InventoryIdentifier
+            - shipmentIdentifier : ShipmentIdentifier
+            - name : String
+            - description : String {nullable}
+            - inventoryStatus : InventoryStatus
+            - approximateWeight : Double
+            + Inventory(shipmentIdentifier, name, description, approximateWeight)
+            + Inventory()
+        }
+
+        class Item {
+            - id : Integer
+            - itemIdentifier : ItemIdentifier
+            - name : String
+            - type : Type
+            - price : BigDecimal
+            - description : String
+            - weight : Double
+            - handlingInstructions : String
+            - inventoryIdentifier : InventoryIdentifier
+            + Item()
+            + Item(name, type, price, description, weight, handlingInstructions, inventoryIdentifier)
+        }
+
+
+        enum InventoryStatus {
+            CREATED
+            IN_PROGRESS
+            PACKED
+        }
+
+        enum Type{
+            BOX
+            ITEM
+        }
+
+        interface InventoryRepository{
+            + findAllByShipmentId(shipmentId: String): List<Inventory>
+            + findByInventoryId(inventoryId: String): Inventory
+        }
+
+        interface ItemRepository{
+            + findAllByInventoryId(inventoryId: String): List<Item>
+            + findByItemId(itemId: String): Item
+        }
+
+    }
+
+    package "datamapperlayer" {
+        interface InventoryResponseMapper{
+            + entityToResponseModel(inventory: Inventory) : InventoryResponseModel
+            + entitiesToResponseModel(inventories: List<Inventory>) : List<InventoryResponseModel>
+        }
+
+        interface InventoryRequestMapper{
+            +requestModelToEntity(inventoryRequestModel: InventoryRequestModel): Inventory
+        }
+
+        interface ItemResponseMapper{
+            + entityToResponseModel(item: Item) : ItemResponseModel
+            + entitiesToResponseModel(items: List<Item>) : List<ItemResponseModel>
+        }
+
+        interface ItemRequestMapper{
+            +requestModelToEntity(itemRequestModel: ItemRequestModel): Item
+        }
+    }
+
+    package "presentationlayer" {
+        class InventoryController {
+            - inventoryService: InventoryService
+            + getInventories(shipmentId: String): ResponseEntity<List<InventoryResponseModel>>
+            + getInventoryById(inventoryId: String) : ResponseEntity<InventoryResponseModel>
+            + getInventories(shipmentId: String) : ResponseEntity<List<InventoryResponseModel>>
+            + addInventory(inventoryRequestModel: InventoryRequestModel, shipmentId: String) : ResponseEntity<InventoryResponseModel>
+            + deleteInventory(inventoryId: String) : ResponseEntity<Void>
+            + editInventory(inventoryRequestModel: InventoryRequestModel, inventoryId: String) : ResponseEntity<InventoryResponseModel>
+        }
+
+        class ItemController {
+            - itemService: ItemService
+            + getItems(shipmentId: String, inventoryId: String): ResponseEntity<List<ItemResponseModel>>
+            + addItem(itemRequestModel: ItemRequestModel, shipmentId: String, inventoryId: String) : ResponseEntity<ItemResponseModel>
+            + updateItem(itemRequestModel: ItemRequestModel, shipmentId: String, inventoryId: String, itemId: String) : ResponseEntity<ItemResponseModel>
+            + deleteItem(shipmentId: String, inventoryId: String, itemId: String) : ResponseEntity<Void>
+            + getItemById(shipmentId: String, inventoryId: String, itemId: String) : ResponseEntity<ItemResponseModel>
+            + getAllItems(shipmentId: String, inventoryId: String) : ResponseEntity<List<ItemResponseModel>>
+        }
+
+        class InventoryRequestModel {
+            - name: String
+            - description: String
+            - inventoryStatus: InventoryStatus
+        }
+
+        class InventoryResponseModel {
+            - name: String
+            - inventoryId: String
+            - shipmentId: String
+            - description: String
+            - inventoryStatus: InventoryStatus
+            - approximateWeight: Double
+        }
+
+        class ItemRequestModel {
+            - name: String
+            - type: Type
+            - price: BigDecimal
+            - description: String
+            - weight: Double
+            - handlingInstructions: String
+        }
+
+        class ItemResponseModel {
+            - itemId: String
+            - name: String
+            - type: Type
+            - price: BigDecimal
+            - description: String
+            - weight: Double
+            - handlingInstructions: String
+            - inventoryId: String
+        }
+
+    }
+
+    ' Relationships For Inventory
+
+    InventoryController -up-> InventoryService : uses
+    InventoryController -down-> InventoryRequestModel : manages
+    InventoryController -down-> InventoryResponseModel : manages
+
+    ItemController -up-> ItemService : uses
+    ItemController -down-> ItemRequestModel : manages
+    ItemController -down-> ItemResponseModel : manages
+
+    InventoryServiceImpl -down-|> InventoryService : implements
+    InventoryServiceImpl -up-> InventoryRepository : uses
+    InventoryServiceImpl -up-> InventoryResponseMapper : uses
+    InventoryServiceImpl -up-> InventoryRequestMapper : uses
+
+    ItemServiceImpl -down-|> ItemService : implements
+    ItemServiceImpl -left-> ItemRepository : uses
+    ItemServiceImpl -up-> ItemResponseMapper : uses
+    ItemServiceImpl -up-> ItemRequestMapper : uses
+
+    InventoryRepository -up-> Inventory : accesses
+    ItemRepository -up-> Item : accesses
+
+    InventoryResponseMapper -up-> Inventory : maps
+    ItemResponseMapper -up-> Item : maps
+    InventoryRequestMapper -up-> Inventory : maps
+    ItemRequestMapper -up-> Item: maps
+
+    ShipmentController -up-> InventoryService : uses
+    ShipmentController -up-> ItemService : uses
+
+    ShipmentController -down-> ItemRequestModel : receives
+    ShipmentController -down-> InventoryRequestModel : receives
+    ShipmentController -down-> InventoryResponseModel : manages
+    ShipmentController -down-> ItemResponseModel : manages
+
+
+    ' Enum Relationships For Inventory
+    Inventory -up-^ InventoryStatus : has status
+    Item -up-^ Type : has type
+
+
+@enduml

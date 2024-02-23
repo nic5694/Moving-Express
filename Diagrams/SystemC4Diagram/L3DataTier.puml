@@ -1,0 +1,143 @@
+@startuml
+!define TABLE(name) class name << (T,#FFAAAA) >>
+!define PRIMARY_KEY(field) field << PK >>
+!define FOREIGN_KEY(field) field << FK >>
+
+skinparam class {
+    BackgroundColor #f7f4eb
+    BorderColor Black
+}
+
+skinparam classAttribute {
+    BackgroundColor #f7f4eb
+    BorderColor Black
+}
+
+Database "MySQL" as BoundedContextMySQL #f29111 {
+
+    TABLE(users) {
+        PRIMARY_KEY(id) INT AUTO_INCREMENT
+        FOREIGN_KEY(user_id) VARCHAR(36) UNIQUE NOT NULL
+        first_name VARCHAR(255) NOT NULL
+        last_name VARCHAR(255) NULL
+        profile_picture_url VARCHAR(255) NULL
+        email VARCHAR(255) UNIQUE NULL
+        phone_number VARCHAR(15) NULL
+    }
+
+    TABLE(trucks) {
+        PRIMARY_KEY(id) INT AUTO_INCREMENT
+        FOREIGN_KEY
+        (vin) VARCHAR(17) UNIQUE NOT NULL
+        capacity DOUBLE
+    }
+    TABLE(addresses) {
+        PRIMARY_KEY(id) INT AUTO_INCREMENT
+        FOREIGN_KEY(address_id) VARCHAR(36) UNIQUE NOT NULL
+        street_address VARCHAR(255) NOT NULL
+        city VARCHAR(255) NOT NULL
+        country VARCHAR(255) NOT NULL
+        postal_code VARCHAR(10) NOT NULL
+    }
+
+    TABLE(shipments) {
+        PRIMARY_KEY(id) INT AUTO_INCREMENT
+        FOREIGN_KEY(shipment_id) VARCHAR(36) UNIQUE
+        status VARCHAR(255)
+        expected_moving_date Date
+        actual_moving_date Date NULL
+        name VARCHAR(255)
+        first_name VARCHAR(255)
+        last_name VARCHAR(255)
+        approximate_weight DOUBLE NULL
+        weight DOUBLE NULL
+        approximate_shipment_value DOUBLE NULL
+        email VARCHAR(255) NULL
+        phone_number VARCHAR(15) NULL
+        FOREIGN_KEY(pickup_address_id) VARCHAR(36)
+        FOREIGN_KEY(destination_address_id) VARCHAR(36)
+        FOREIGN_KEY(vin) VARCHAR(17) NULL
+        FOREIGN_KEY(driver_id) VARCHAR(36) NULL
+        FOREIGN_KEY(user_id) VARCHAR(36) NULL
+        FOREIGN KEY (driver_id) REFERENCES drivers(user_id)
+        FOREIGN KEY (pickup_address_id) REFERENCES addresses(address_id)
+        FOREIGN KEY (destination_address_id) REFERENCES addresses(address_id)
+        FOREIGN KEY (vin) REFERENCES trucks(vin)
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+    }
+
+    TABLE(inventories) {
+        PRIMARY_KEY(id) INT AUTO_INCREMENT
+        name VARCHAR(255)
+        FOREIGN_KEY(inventory_id) VARCHAR(36) UNIQUE NOT NULL
+        description VARCHAR(2000)
+        inventory_status VARCHAR(255)
+        approximate_weight DOUBLE NULL
+        FOREIGN_KEY(shipment_id) VARCHAR(36)
+        FOREIGN KEY (shipment_id) REFERENCES shipments(shipment_id)
+    }
+
+    TABLE(items) {
+        PRIMARY_KEY(id) INT AUTO_INCREMENT
+        FOREIGN_KEY(item_id) VARCHAR(36) UNIQUE NOT NULL
+        name VARCHAR(255) NOT NULL
+        type ENUM('ITEM', 'BOX') NOT NULL
+        price DECIMAL(10, 2) NULL
+        description VARCHAR(255)
+        weight DOUBLE NULL
+        handling_instructions VARCHAR(255) NULL
+        FOREIGN_KEY(inventory_id) VARCHAR(36)
+        FOREIGN KEY (inventory_id) REFERENCES inventories(inventory_id)
+    }
+
+    TABLE(quotes) {
+        PRIMARY_KEY(id) INT AUTO_INCREMENT
+        FOREIGN_KEY(quote_id) VARCHAR(36) UNIQUE NOT NULL
+        pickup_street_address VARCHAR(255)
+        pickup_city VARCHAR(255)
+        pickup_country VARCHAR(255)
+        pickup_postal_code VARCHAR(10)
+        pickup_number_of_rooms INT
+        pickup_elevator BOOLEAN
+        pickup_building_type VARCHAR(255)
+        destination_street_address VARCHAR(255)
+        destination_city VARCHAR(255)
+        destination_country VARCHAR(255)
+        destination_postal_code VARCHAR(10)
+        destination_number_of_rooms INT
+        destination_elevator BOOLEAN
+        destination_building_type VARCHAR(255)
+        first_name VARCHAR(255)
+        last_name VARCHAR(255)
+        email_address VARCHAR(255)
+        phone_number VARCHAR(15)
+        contact_method VARCHAR(30)
+        expected_moving_date Date
+        initiation_date DATETIME
+        comment TEXT
+        quote_status VARCHAR(10)
+        shipment_name VARCHAR(255)
+        approximate_weight DOUBLE NULL
+        approximate_shipment_value DOUBLE NULL
+    }
+
+    TABLE(observers) {
+        PRIMARY_KEY(id) VARCHAR(36)
+        FOREIGN_KEY(observer_id) VARCHAR(36) UNIQUE NOT NULL
+        name VARCHAR(255)
+        observer_code VARCHAR(8)
+        permission ENUM('READ', 'EDIT', 'ALL')
+        FOREIGN_KEY(shipment_id) VARCHAR(36)
+        FOREIGN KEY (shipment_id) REFERENCES shipments(shipment_id)
+    }
+
+    users ||--|{ shipments : user_id
+    addresses ||--o{ shipments : pickup_address_id
+    addresses ||--o{ shipments : destination_address_id
+    trucks ||--o{ shipments : vin
+    inventories ||--o{ items
+    quotes ||--|{ shipments
+    shipments ||--|{ inventories
+    shipments ||--o{ observers
+}
+@enduml

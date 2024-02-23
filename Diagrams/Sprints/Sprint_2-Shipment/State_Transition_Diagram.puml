@@ -1,0 +1,33 @@
+@startuml
+title Shipment Process State Transition Diagram - Managed States
+
+skinparam shadowing false
+skinparam ArrowColor Black
+skinparam StateBackgroundColor PaleGreen
+skinparam StateBorderColor Black
+
+[*] --> QuoteRequested
+QuoteRequested --> QuoteUnderReview : Quote Submitted
+QuoteUnderReview --> QuoteRejected : Review Rejected
+QuoteUnderReview --> QuoteAccepted : Review Approved
+QuoteAccepted --> ShipmentPreparation : Prepare Shipment
+ShipmentPreparation --> ShipmentReady : Shipment Ready
+ShipmentReady --> [*] : Shipment Dispatched
+
+ShipmentPreparation -up-> ShipmentCancelled : Cancellation Requested
+ShipmentReady -up-> ShipmentCancelled : Cancellation Requested
+ShipmentCancelled --> [*] : Cancellation Processed
+
+state QuoteUnderReview {
+    [*] --> ReviewInProgress
+    ReviewInProgress --> QuoteUpdated : Update by Estimator/Reviewer
+    QuoteUpdated --> ReviewInProgress : Further Review
+    ReviewInProgress --> [*] : Review Complete
+}
+
+state ShipmentCancelled {
+    [*] --> CancellationProcessing
+    CancellationProcessing --> [*] : Cancellation Complete
+}
+
+@enduml

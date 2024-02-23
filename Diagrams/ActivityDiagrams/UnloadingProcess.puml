@@ -1,0 +1,39 @@
+@startuml
+
+|Customer|
+start
+|Customer|
+:Customer supervises unloading;
+repeat
+  |Item List|
+  |Moving Company Movers|
+:Moving company unloads the item/box;
+fork
+|Customer|
+:Customer inspects unloading of the item/boxes;
+if (Any issues arise?) then (yes)
+  |Customer|
+  :Note the issue that happened with the item or box;
+else (no)
+  |Customer|
+endif
+|Moving Company Movers|
+fork again
+  :Company movers inspect the unloading of item and boxes;
+  |Item List|
+  |Moving Company Movers|
+  |Item List|
+end fork
+|Item List|
+:Check the item or box as unloaded;
+|Moving Company Movers|
+repeat while (Done unloading?) is (no)
+|Item List|
+:Make a copy of the list of items and documentation;
+|Customer|
+:Give the copy to the customer;
+|Customer|
+
+stop
+
+@enduml

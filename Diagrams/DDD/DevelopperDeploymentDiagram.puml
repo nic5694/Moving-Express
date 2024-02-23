@@ -1,0 +1,57 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+!include <archimate/Archimate>
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!include DEVICONS/java.puml
+!include DEVICONS/mysql.puml
+!include DEVICONS/react.puml
+!include DEVICONS/html5.puml
+!include DEVICONS/javascript.puml
+!define DEVICONS2 https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons2
+!include DEVICONS2/google.puml
+!include DEVICONS2/npm_original_wordmark.puml
+!define SPRITES https://raw.githubusercontent.com/plantuml-stdlib/gilbarbara-plantuml-sprites/v1.1/sprites
+!include SPRITES/auth0.puml
+LAYOUT_TOP_DOWN()
+AddElementTag("service", $shape=square(), $bgColor="#557C99", $fontColor="white", $legendText="Service\square")
+AddElementTag("ext_service", $shape=sqaure(), $bgColor="Gray", $fontColor="white" ,$legendText="External Service\square")
+AddElementTag("SPA", $shape=RoundedBoxShape(), $bgColor="#61DAFB", $fontColor="#333333", $legendText="Single-Page Application")
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="#f29111", $fontColor="white", $legendText="Databases")
+AddElementTag("webApp", $shape=RoundedBoxShape(), $bgColor="#f06529", $fontColor="white", $legendText="Web Application")
+' Define deployment nodes
+node "Web Broser \n[Deployment Node: Chrome and Firefox]" {
+   Container(spa, "Single-Page Application", "TypeScript, ReactJs", "Provides a GUI interface that contains all the functionalities of the Spring boot application. Uses React Router framework to handle the multiple pages. Uses multiple npm libraries to display and format content.", $sprite="react",$tags="SPA")
+}
+
+node "Docker Container API \n[Deployment Node: Docker]" {
+  node "Apache Tomcat \n [Deployment Node:]" {
+   Container(api, "Moving Express API", "Spring boot: Java", "Provides shipment management functionality and information for the moving company Moving Express via JSON/HTTPS API.", $sprite="java", $tags="service")
+  }
+}
+
+
+Container(auth, "Auth0", "SaaS", "Easy and adaptable authorisation and authentication platform.", $sprite="auth0", $tags="ext_service")
+
+
+Container(email, "Gmail SMTP System", "Email Service", "The internal google emailing system.", $sprite="google", $tags="ext_service")
+node "Docker Container Web App \n[Deployment Node: Docker]" {
+node "Webpack Development Server\n[Deployment Node:webpack-dev-server/^4.6.0]"{
+  Container(webApp, "Web Application", "Single page application built and compiled into ReactJs", "Delivers the static content to the single page application.", $tags="webApp")
+}
+}
+
+node "Docker Container Database \n[Deployment Node: Docker]" {
+  node "MySQL Server\n [Deployment Node: MYSQL Server/5.7.44"{
+  ContainerDb(database, "Database", "MySQL", "Stores client data, shipment information and user contact details", $sprite="mysql", $tags="storage")
+  }
+}
+
+' Define relationships
+spa -[dashed]-> api : "Makes API calls to"
+api -[dashed]-> database : "Connects via SQL/TCP\n[JDBC]"
+api -[dashed]-> auth : "Authenticates with\n[OAuth2/OpenID]"
+api -[dashed]-> email : "Sends emails\n[SMTP/TCP/IP]"
+webApp -[dashed]-> spa : "Delivers static content to the SPA"
+SHOW_LEGEND()
+@enduml

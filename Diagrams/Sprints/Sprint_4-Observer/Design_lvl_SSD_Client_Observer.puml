@@ -1,0 +1,177 @@
+@startuml
+title Observer CRUD Operations within a Shipment Context
+
+actor Observer
+
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LandingPage as "<<View>>\nLandingPage"
+participant UserHomePage as "<<View>>\nUserHomePage"
+participant ShipmentsPage as "<<View>>\nShipmentsPage"
+participant ShipmentDetailsPage as "<<View>>\nShipmentDetailsPage"
+participant ObserverController as "<<Controller>>\nObserverController"
+participant ObserverRequestMapper as "<<Mapper>>\nObserverRequestMapper"
+participant "ObserverRequestModel" as ObserverRequestModel
+participant ObserverService as "<<Service>>\nObserver Service"
+participant "ObserverEntity" as Entity
+participant ObserverRepository as "<<Repository>>\nObserverRepository"
+participant Database as "<<Database>>"
+participant ObserverResponseMapper as "<<Mapper>>\nObserverResponseMapper"
+participant "ObserverResponseModel" as ObserverResponseModel
+
+ref over Observer,ReactApplication,ShipmentsPage : Use Case 5.0 Monitor shipment
+
+ShipmentsPage -> ShipmentDetailsPage : Navigate
+deactivate ReactApplication
+activate ShipmentDetailsPage
+
+ShipmentDetailsPage -> ObserverController : GET /observers
+activate ObserverController
+ObserverController -> ObserverService : getAllObservers(shipmentId)
+activate ObserverService
+ObserverService -> ObserverRepository : findAllByShipmentId(shipmentId)
+activate ObserverRepository
+ObserverRepository -> Database : "SELECT * FROM observers WHERE shipment_id = :shipmentId"
+activate Database
+Database --> ObserverRepository : Observers
+deactivate Database
+ObserverRepository --> ObserverService : Observers
+deactivate ObserverRepository
+ObserverService -> ObserverResponseMapper : toResponseModels(Observers)
+activate ObserverResponseMapper
+ObserverResponseMapper -> ResponseModel : Map to ResponseModels
+activate ResponseModel
+ResponseModel --> ObserverService : List of ObserverResponseModels
+deactivate ResponseModel
+deactivate ObserverResponseMapper
+ObserverService --> ObserverController : List of ObserverResponseModels
+deactivate ObserverService
+ObserverController --> ShipmentDetailsPage : Display Observers
+deactivate ObserverController
+
+ShipmentDetailsPage -> ObserverController : GET /observers/{observerCode}
+activate ObserverController
+ObserverController -> ObserverService : getObserverByObserverCode(shipmentId, observerCode)
+activate ObserverService
+ObserverService -> ObserverRepository : findByObserverCodeAndShipmentId(observerCode, shipmentId)
+activate ObserverRepository
+ObserverRepository -> Database : "SELECT * FROM observers WHERE observer_code = :observerCode AND shipment_id = :shipmentId"
+activate Database
+Database --> ObserverRepository : Observer
+deactivate Database
+ObserverRepository --> ObserverService : Observer
+deactivate ObserverRepository
+ObserverService -> ObserverResponseMapper : toResponseModel(Observer)
+activate ObserverResponseMapper
+ObserverResponseMapper -> ResponseModel : Map to ResponseModel
+activate ResponseModel
+ResponseModel --> ObserverService : ObserverResponseModel
+deactivate ResponseModel
+deactivate ObserverResponseMapper
+ObserverService --> ObserverController : ObserverResponseModel
+deactivate ObserverService
+ObserverController --> ShipmentDetailsPage : Display Observer Details
+deactivate ObserverController
+
+opt Add New Observer
+    ShipmentDetailsPage -> ObserverController : POST /observers
+    activate ObserverController
+    ObserverController -> ObserverRequestMapper : createObserver(shipmentId, RequestModel)
+    activate ObserverRequestMapper
+
+    ObserverRequestMapper -> ObserverRequestModel : toEntity(RequestModel)
+    deactivate ObserverRequestMapper
+    activate ObserverRequestModel
+
+    ObserverRequestModel -> ObserverService : Passing the model's Data
+    deactivate ObserverRequestModel
+    activate ObserverService
+
+    ObserverService -> Entity : Set Entity Data
+
+    activate Entity
+    Entity --> ObserverService : ObserverEntity
+    deactivate Entity
+    ObserverService -> ObserverRepository : save(ObserverEntity)
+    activate ObserverRepository
+    ObserverRepository -> Database : "INSERT INTO observers (...)"
+    activate Database
+    Database --> ObserverRepository : Success
+    deactivate Database
+    ObserverRepository --> ObserverService : Saved ObserverEntity
+    deactivate ObserverRepository
+    ObserverService -> ObserverResponseMapper : toResponseModel(Saved ObserverEntity)
+    activate ObserverResponseMapper
+    ObserverResponseMapper -> ResponseModel : Map to ResponseModel
+    activate ResponseModel
+    ResponseModel --> ObserverService : ObserverResponseModel
+    deactivate ResponseModel
+    deactivate ObserverResponseMapper
+    ObserverService --> ObserverController : ObserverResponseModel
+    deactivate ObserverService
+    ObserverController --> ShipmentDetailsPage : Show New Observer
+    deactivate ObserverController
+end
+
+opt Update Observer
+    ShipmentDetailsPage -> ObserverController : PUT /observers/{observerId}
+    activate ObserverController
+
+    ObserverController -> ObserverRequestMapper : updateObserver(shipmentId, observerId, RequestModel)
+    activate ObserverRequestMapper
+
+    ObserverRequestMapper -> ObserverRequestModel : toEntity(RequestModel)
+    activate ObserverRequestModel
+    deactivate ObserverRequestMapper
+
+    ObserverRequestModel -> ObserverService : Passing Updated model's Data
+    activate ObserverService
+    deactivate ObserverRequestModel
+
+    ObserverService -> Entity : Update Entity Data
+    activate Entity
+    Entity --> ObserverService : Updated ObserverEntity
+    deactivate Entity
+
+    ObserverService -> ObserverRepository : save(Updated ObserverEntity)
+    activate ObserverRepository
+    ObserverRepository -> Database : "UPDATE observers SET ... WHERE id = :observerId"
+    activate Database
+    Database --> ObserverRepository : Success
+    deactivate Database
+    ObserverRepository --> ObserverService : Updated ObserverEntity
+    deactivate ObserverRepository
+    ObserverService -> ObserverResponseMapper : toResponseModel(Updated ObserverEntity)
+    activate ObserverResponseMapper
+    ObserverResponseMapper -> ResponseModel : Map to ResponseModel
+    activate ResponseModel
+    ResponseModel --> ObserverService : Updated ObserverResponseModel
+    deactivate ResponseModel
+    deactivate ObserverResponseMapper
+    ObserverService --> ObserverController : Updated ObserverResponseModel
+    deactivate ObserverService
+    ObserverController --> ShipmentDetailsPage : Show Updated Observer
+    deactivate ObserverController
+end
+
+opt Delete Observer
+    ShipmentDetailsPage -> ObserverController : DELETE /observers/{observerId}
+    activate ObserverController
+    ObserverController -> ObserverService : deleteObserver(shipmentId, observerId)
+    activate ObserverService
+    ObserverService -> ObserverRepository : deleteById(observerId)
+    activate ObserverRepository
+    ObserverRepository -> Database : "DELETE FROM observers WHERE id = :observerId"
+    activate Database
+    Database --> ObserverRepository : Success
+    deactivate Database
+    ObserverRepository --> ObserverService : Success
+    deactivate ObserverRepository
+    ObserverService --> ObserverController : Success Message
+    deactivate ObserverService
+    ObserverController --> ShipmentDetailsPage : Show Deletion Confirmation
+    deactivate ObserverController
+end
+
+deactivate ShipmentDetailsPage
+
+@enduml

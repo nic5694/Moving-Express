@@ -1,0 +1,237 @@
+@startuml
+title Observer Inventory Management Sequence Diagram
+
+actor Observer
+
+participant ReactApplication as "<<View>>\nReact Application"
+participant LandingPage as "<<View>>\nLanding Page"
+participant ObserverShipmentDetailsPage as "<<View>>\nObserver ShipmentDetailsPage"
+participant Popup as "<<Component>>\nPopup"
+participant ObserverController as "<<Controller>>\nObserverController"
+participant InventoryRequestMapper as "<<Mapper>>\nInventoryRequestMapper"
+participant "InventoryRequestModel" as RequestModel
+participant InventoryService as "<<Service>>\nInventoryService"
+participant "InventoryEntity" as Entity
+participant InventoryRepository as "<<Repository>>\nInventoryRepository"
+participant Database as "<<Database>>"
+participant InventoryResponseMapper as "<<Mapper>>\nInventoryResponseMapper"
+participant "InventoryResponseModel" as ResponseModel
+
+activate ReactApplication
+ReactApplication -> LandingPage : render()
+activate LandingPage
+deactivate ReactApplication
+LandingPage -> ObserverShipmentDetailsPage : Enter Observer Code\nRedirect to ObserverShipmentDetails
+deactivate LandingPage
+activate ObserverShipmentDetailsPage
+
+ref over ObserverShipmentDetailsPage : Retrieve Shipment Details
+
+ObserverShipmentDetailsPage -> ObserverController : GET /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories?observerCode=observerCode
+activate ObserverController
+
+ObserverController -> InventoryService : getInventories(shipmentId, observerCode)
+
+activate InventoryService
+
+InventoryService -> InventoryRepository : findByShipmentId(shipmentId)
+activate InventoryRepository
+
+InventoryRepository -> Database : SELECT * FROM inventories WHERE shipmentId = ?
+activate Database
+Database --> InventoryRepository : Inventories Data Retrieved
+deactivate Database
+
+InventoryRepository --> InventoryService : Inventories Data
+deactivate InventoryRepository
+
+' Mapping from Entities to Response Models
+InventoryService -> InventoryResponseMapper : entitiesToResponseModels(Inventories)
+activate InventoryResponseMapper
+InventoryResponseMapper -> ResponseModel : Convert Entities to Response Models
+activate ResponseModel
+ResponseModel --> InventoryService : Response Models Ready
+deactivate ResponseModel
+deactivate InventoryResponseMapper
+
+InventoryService --> ObserverController : Response Models Data
+deactivate InventoryService
+ObserverController --> ObserverShipmentDetailsPage : Display Inventories List
+deactivate ObserverController
+
+' Get Inventory by Id
+opt Get Inventory by ID
+    ObserverShipmentDetailsPage -> Popup : Clicks 'View Inventory Details' button
+    activate Popup
+    Popup -> ObserverController : GET /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories/{inventoryId}?observerCode=observerCode
+    activate ObserverController
+
+    ObserverController -> InventoryService : getInventoryById(inventoryId, observerCode)
+    activate InventoryService
+
+    InventoryService -> InventoryRepository : findByInventoryId(inventoryId)
+    activate InventoryRepository
+
+    InventoryRepository -> Database : SELECT * FROM inventories WHERE inventoryId = ?
+    activate Database
+    Database --> InventoryRepository : Inventory Data Retrieved
+    deactivate Database
+
+    InventoryRepository --> InventoryService : Inventory Data
+    deactivate InventoryRepository
+
+    ' Mapping from Entity to Response Model
+    InventoryService -> InventoryResponseMapper : entityToResponseModel(Inventory)
+    activate InventoryResponseMapper
+    InventoryResponseMapper -> ResponseModel : Convert Entity to Response Model
+    activate ResponseModel
+    ResponseModel --> InventoryService : Response Model Ready
+    deactivate ResponseModel
+    deactivate InventoryResponseMapper
+
+    InventoryService --> ObserverController : Response Model Data
+    deactivate InventoryService
+    ObserverController --> Popup : Show Inventory Details
+    Popup --> ObserverShipmentDetailsPage : Closes Popup with "Inventory Details Displayed Successfully" Message
+    deactivate Popup
+    deactivate ObserverController
+end
+
+' Add New Inventory - Requires EDIT or FULL permission
+opt Add New Inventory
+    note right of ObserverShipmentDetailsPage : The following actions require EDIT or FULL permissions.
+
+    ObserverShipmentDetailsPage -> Popup : Clicks 'Add Inventory' button
+    activate Popup
+    Popup -> ObserverController : POST /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories?observerCode=observerCode
+    activate ObserverController
+
+    ObserverController -> InventoryRequestMapper : addInventory(inventoryRequestModel, observerCode)
+    activate InventoryRequestMapper
+
+    ' Mapping from Request Model to Entity
+    InventoryRequestMapper -> RequestModel : Map to Entity
+    activate RequestModel
+    deactivate InventoryRequestMapper
+
+    RequestModel -> InventoryService : Passing Request Data
+    activate InventoryService
+
+    deactivate RequestModel
+    InventoryService -> Entity : Set Details
+    activate Entity
+
+    Entity --> InventoryService : Entity Prepared
+    deactivate Entity
+
+    deactivate RequestModel
+
+    ' Persisting the Entity
+    InventoryService -> InventoryRepository : save(Entity)
+    activate InventoryRepository
+    InventoryRepository -> Database : INSERT INTO inventories
+    activate Database
+    Database --> InventoryRepository : Insert Successful
+    deactivate Database
+    InventoryRepository --> InventoryService : Entity with ID
+    deactivate InventoryRepository
+
+    ' Mapping from Entity to Response Model
+    InventoryService -> InventoryResponseMapper : entityToResponseModel(New Inventory)
+    activate InventoryResponseMapper
+    InventoryResponseMapper -> ResponseModel : Convert Entity to Response Model
+    activate ResponseModel
+    ResponseModel --> InventoryService : Response Model Prepared
+    deactivate InventoryResponseMapper
+    deactivate ResponseModel
+    InventoryService --> ObserverController : Inventory Response Model
+    deactivate InventoryService
+    ObserverController --> Popup : Show "Inventory Added Successfully" Confirmation
+    Popup --> ObserverShipmentDetailsPage : Closes Popup
+    deactivate Popup
+    deactivate ObserverController
+end
+
+' Update Inventory - Requires EDIT or FULL permission
+opt Update Inventory
+    note right of ObserverShipmentDetailsPage : The following actions require EDIT or FULL permissions.
+
+    ObserverShipmentDetailsPage -> Popup : Clicks 'Update Inventory' button
+    activate Popup
+    Popup -> ObserverController : PUT /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories/{inventoryId}?observerCode=observerCode
+    activate ObserverController
+
+    ObserverController -> InventoryRequestMapper : updateInventory(inventoryRequestModel, inventoryId, observerCode)
+
+    ' Mapping from Request Model to Entity for Update
+    activate InventoryRequestMapper
+    InventoryRequestMapper -> RequestModel : Map to Entity for Update
+    activate RequestModel
+    deactivate InventoryRequestMapper
+
+    RequestModel -> InventoryService : Passing the model Data
+    activate InventoryService
+    deactivate RequestModel
+    activate InventoryService
+    InventoryService -> Entity : Apply Updates
+    activate Entity
+    Entity --> InventoryService : Updated Entity
+    deactivate Entity
+
+    ' Persisting the Updated Entity
+    InventoryService -> InventoryRepository : save(Updated Entity)
+    activate InventoryRepository
+    InventoryRepository -> Database : UPDATE inventories SET details = ? WHERE id = ?
+    activate Database
+    Database --> InventoryRepository : Update Successful
+    deactivate Database
+    InventoryRepository --> InventoryService : Entity with Updated Details
+    deactivate InventoryRepository
+
+    ' Mapping from Updated Entity to Response Model
+    InventoryService -> InventoryResponseMapper : entityToResponseModel(Updated Inventory)
+    activate InventoryResponseMapper
+    InventoryResponseMapper -> ResponseModel : Convert Updated Entity to Response Model
+    activate ResponseModel
+    ResponseModel --> InventoryService : Updated Response Model Ready
+    deactivate ResponseModel
+    deactivate InventoryResponseMapper
+
+    InventoryService --> ObserverController : Updated Inventory Response Model
+    deactivate InventoryService
+    ObserverController --> Popup : Show "Inventory Updated Successfully" Confirmation
+    Popup --> ObserverShipmentDetailsPage : Closes Popup
+    deactivate Popup
+    deactivate ObserverController
+end
+
+' Delete Inventory - Requires FULL permission
+opt Delete Inventory
+    note right of ObserverShipmentDetailsPage : The following action requires FULL permission.
+
+    ObserverShipmentDetailsPage -> Popup : Clicks 'Delete Inventory' button
+    activate Popup
+    Popup -> ObserverController : DELETE /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories/{inventoryId}?observerCode=observerCode
+    activate ObserverController
+
+    ObserverController -> InventoryService : deleteInventory(inventoryId, observerCode)
+    activate InventoryService
+
+    InventoryService -> InventoryRepository : deleteById(inventoryId)
+    activate InventoryRepository
+    InventoryRepository -> Database : DELETE FROM inventories WHERE id = inventoryId
+    activate Database
+    Database --> InventoryRepository : Deletion Successful
+    deactivate Database
+    InventoryRepository --> InventoryService : Confirmation of Deletion
+    deactivate InventoryRepository
+
+    InventoryService --> ObserverController : Confirmation of Deletion
+    deactivate InventoryService
+    ObserverController --> Popup : Show "Inventory Deleted Successfully" Confirmation
+    Popup --> ObserverShipmentDetailsPage : Closes Popup
+    deactivate Popup
+    deactivate ObserverController
+end
+
+@enduml

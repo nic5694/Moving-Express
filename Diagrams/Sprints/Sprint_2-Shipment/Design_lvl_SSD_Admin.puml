@@ -1,0 +1,116 @@
+@startuml
+title Quote Acceptance and Shipment Creation Process
+
+actor "Moving Estimator / Shipment Reviewer" as Admin
+
+' Define the User Interface components
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LandingPage as "<<View>>\nLandingPage"
+participant AdminHomePage as "<<View>>\nAdminHomePage"
+participant AdminQuotePage as "<<View>>\nAdminQuotePage"
+
+' Define the Backend components
+participant QuoteController as "<<Controller>>\nQuoteController"
+participant EventRequestModel as "<<Model>>\nEventRequestModel"
+participant QuoteService as "<<Service>>\nQuoteService"
+participant QuoteRepository as "<<Repository>>\nQuoteRepository"
+participant Database as "<<Database>>\nDatabase"
+participant QuoteResponseMapper as "<<Mapper>>\nQuoteResponseMapper"
+participant QuoteResponseModel as "<<Model>>\nQuoteResponseModel"
+participant ShipmentService as "<<Service>>\nShipmentService"
+participant QuoteResponseToShipmentMapper as "<<Mapper>>\nQuoteResponseToShipmentMapper"
+participant ShipmentRepository as "<<Repository>>\nShipmentRepository"
+participant ShipmentResponseMapper as "<<Mapper>>\nShipmentResponseMapper"
+participant ShipmentResponseModel as "<<Model>>\nShipmentResponseModel"
+participant EmailUtil as "<<Utility>>\nEmailUtil"
+participant ShipmentEntity as "<<Entity>>\nShipment"
+
+
+' Website access and navigation sequence
+Admin -> ReactApplication : Access website
+activate ReactApplication
+
+ReactApplication -> LandingPage : render()
+activate LandingPage
+deactivate ReactApplication
+
+LandingPage -> AdminHomePage : Admin logs in
+deactivate LandingPage
+activate AdminHomePage
+
+AdminHomePage -> AdminQuotePage : Navigate to Quote Management
+deactivate AdminHomePage
+activate AdminQuotePage
+
+' Quote acceptance sequence
+AdminQuotePage -> QuoteController : POST api/v1/movingexpress/quotes/{quoteId}/events (Accept)
+activate QuoteController
+
+QuoteController -> EventRequestModel : createQuoteEvent(eventRequestModel, quoteId)
+activate EventRequestModel
+
+
+EventRequestModel -> QuoteService : Instantiate Accepted Event Request
+activate QuoteService
+deactivate EventRequestModel
+
+QuoteService -> QuoteEntity : Apply event to Entity action
+activate QuoteEntity
+QuoteEntity --> QuoteService : Event action
+deactivate QuoteEntity
+
+QuoteService -> QuoteRepository : Update Quote Status to Accepted
+activate QuoteRepository
+QuoteRepository -> Database : UPDATE quotes SET status='ACCEPTED' WHERE id={quoteId}
+activate Database
+Database --> QuoteRepository : Success
+deactivate Database
+QuoteRepository --> QuoteService : Updated quote
+deactivate QuoteRepository
+
+QuoteService -> EventResponseModel : Create response based on event outcome
+activate EventResponseModel
+EventResponseModel --> QuoteService : Event response
+deactivate EventResponseModel
+
+QuoteService --> QuoteController : EventResponseModel (Success)
+deactivate QuoteService
+
+QuoteController --> AdminQuotePage : Display 'Quote Accepted' Message
+deactivate QuoteController
+
+' Shipment creation sequence
+AdminQuotePage -> ShipmentService : Create Shipment (QuoteResponseModel)
+activate ShipmentService
+
+ShipmentService -> QuoteResponseToShipmentMapper : Map QuoteResponseModel to Shipment
+activate QuoteResponseToShipmentMapper
+QuoteResponseToShipmentMapper --> ShipmentRepository : Shipment Entity
+deactivate QuoteResponseToShipmentMapper
+activate ShipmentRepository
+
+ShipmentRepository -> Database : INSERT INTO shipments
+activate Database
+Database --> ShipmentRepository : Shipment Created
+deactivate Database
+
+ShipmentRepository --> ShipmentService : Shipment Entity
+deactivate ShipmentRepository
+
+ShipmentService -> ShipmentResponseMapper : entityToResponseModel
+activate ShipmentResponseMapper
+ShipmentResponseMapper --> ShipmentResponseModel : Shipment Response Model
+activate ShipmentResponseModel
+deactivate ShipmentResponseMapper
+ShipmentResponseModel --> ShipmentService : Shipment Response Model
+deactivate ShipmentResponseModel
+ShipmentService --> AdminQuotePage : Display 'Shipment Created' Message
+deactivate ShipmentService
+
+' Notification sequence
+AdminQuotePage -> EmailUtil : Send Shipment Creation Email
+activate EmailUtil
+EmailUtil --> Admin : Email Sent Confirmation
+deactivate EmailUtil
+
+@enduml

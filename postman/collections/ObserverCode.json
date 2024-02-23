@@ -1,0 +1,341 @@
+{
+	"info": {
+		"_postman_id": "795f9f08-b2d0-4bee-9ec5-65b68d3413e8",
+		"name": "ObserverCode",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "31434921-795f9f08-b2d0-4bee-9ec5-65b68d3413e8"
+	},
+	"item": [
+		{
+			"name": "Inventory",
+			"item": [
+				{
+					"name": "Create Inventory Observer",
+					"id": "b6e5afbe-d270-4a3d-868f-c7558f67ba0b",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"shipmentId\": \"5dc2c1d3-c9b7-4079-bdf4-cad3725c9a46\",\r\n    \"name\": \"Living Room Richard\",\r\n    \"description\" : \"There is a treasure in this room\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/movingexpress/shipments/c0a80121-7f5e-4d77-a5a4-5d41b04f5a23/inventories?observerCode=KZXL1D",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"movingexpress",
+								"shipments",
+								"c0a80121-7f5e-4d77-a5a4-5d41b04f5a23",
+								"inventories"
+							],
+							"query": [
+								{
+									"key": "observerCode",
+									"value": "KZXL1D"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Inventories Observer",
+					"id": "9105371e-8836-4993-92e2-d1f8c2458598",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"shipmentId\": \"5dc2c1d3-c9b7-4079-bdf4-cad3725c9a46\",\r\n    \"name\": \"Living Room\",\r\n    \"description\" : \"I am here now\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/movingexpress/shipments/c0a80121-7f5e-4d77-a5a4-5d41b04f5a23/inventories?observerCode=WHIVQZ",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"movingexpress",
+								"shipments",
+								"c0a80121-7f5e-4d77-a5a4-5d41b04f5a23",
+								"inventories"
+							],
+							"query": [
+								{
+									"key": "observerCode",
+									"value": "WHIVQZ"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Inventory Observer",
+					"id": "98b0b76b-e6df-4bd3-ab6d-8cd0b8d2e490",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"shipmentId\": \"5dc2c1d3-c9b7-4079-bdf4-cad3725c9a46\",\r\n    \"name\": \"Living Room\",\r\n    \"description\" : \"I am here now\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/movingexpress/shipments/c0a80121-7f5e-4d77-a5a4-5d41b04f5a23/inventories/b9c5a4b0-91c6-4d5c-9d19-84080e0da5b9?observerCode=IHRVEE",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"movingexpress",
+								"shipments",
+								"c0a80121-7f5e-4d77-a5a4-5d41b04f5a23",
+								"inventories",
+								"b9c5a4b0-91c6-4d5c-9d19-84080e0da5b9"
+							],
+							"query": [
+								{
+									"key": "observerCode",
+									"value": "IHRVEE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get InventoryById Observer",
+					"id": "50b47362-a804-4495-a62e-97ffd2cb0c17",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"shipmentId\": \"5dc2c1d3-c9b7-4079-bdf4-cad3725c9a46\",\r\n    \"name\": \"Living Room\",\r\n    \"description\" : \"I am here now\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/movingexpress/shipments/c0a80121-7f5e-4d77-a5a4-5d41b04f5a23/inventories/79b74c53-ee5e-41b0-94a7-05af5d07c70d?observerCode=C9WDLN",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"movingexpress",
+								"shipments",
+								"c0a80121-7f5e-4d77-a5a4-5d41b04f5a23",
+								"inventories",
+								"79b74c53-ee5e-41b0-94a7-05af5d07c70d"
+							],
+							"query": [
+								{
+									"key": "observerCode",
+									"value": "C9WDLN"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Inventory Observer",
+					"id": "6ec86a92-e251-4acd-bed1-5e4952a7d385",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"shipmentId\": \"c0a80121-7f5e-4d77-a5a4-5d41b04f5a23\",\r\n    \"name\": \"Living Room C\",\r\n    \"description\" : \"I am here Today\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/movingexpress/shipments/c0a80121-7f5e-4d77-a5a4-5d41b04f5a23/inventories/79b74c53-ee5e-41b0-94a7-05af5d07c70d?observerCode=C9WDLN",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"movingexpress",
+								"shipments",
+								"c0a80121-7f5e-4d77-a5a4-5d41b04f5a23",
+								"inventories",
+								"79b74c53-ee5e-41b0-94a7-05af5d07c70d"
+							],
+							"query": [
+								{
+									"key": "observerCode",
+									"value": "C9WDLN"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "23117a86-cfb4-4077-8308-2700fb499b93"
+		},
+		{
+			"name": "Items",
+			"item": [
+				{
+					"name": "Get Items Observer",
+					"id": "040ab5a4-38a9-4369-9b0d-371d926d94fe",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/movingexpress/shipments/c0a80121-7f5e-4d77-a5a4-5d41b04f5a23/inventories/79b74c53-ee5e-41b0-94a7-05af5d07c70d/items?observerCode=KZXL1D",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"movingexpress",
+								"shipments",
+								"c0a80121-7f5e-4d77-a5a4-5d41b04f5a23",
+								"inventories",
+								"79b74c53-ee5e-41b0-94a7-05af5d07c70d",
+								"items"
+							],
+							"query": [
+								{
+									"key": "observerCode",
+									"value": "KZXL1D"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "8417b49c-7522-4ec0-a823-bbfa9db5889d"
+		},
+		{
+			"name": "Join Shipment",
+			"id": "b6b2f561-632b-4006-8115-6c00794da66c",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/movingexpress/shipments/observer/1F15UE",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"movingexpress",
+						"shipments",
+						"observer",
+						"1F15UE"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Observer Code",
+			"id": "a2bbccbd-8738-403d-b3c6-eaf5e1f3a19d",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Charle\",\r\n    \"permission\": \"FULL\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/movingexpress/shipments/c0a80121-7f5e-4d77-a5a4-5d41b04f5a23/observers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"movingexpress",
+						"shipments",
+						"c0a80121-7f5e-4d77-a5a4-5d41b04f5a23",
+						"observers"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

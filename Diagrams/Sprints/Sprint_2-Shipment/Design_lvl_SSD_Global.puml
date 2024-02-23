@@ -1,0 +1,221 @@
+@startuml
+title Global Shipment Management and Request Sequence Diagram
+
+actor "Moving Estimator / Shipment Reviewer" as Admin
+actor Client
+
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LandingPage as "<<View>>\nLandingPage"
+participant AdminHomePage as "<<View>>\nAdminHomePage"
+participant UserHomePage as "<<View>>\nUserHomePage"
+participant ShipmentsPage as "<<View>>\nShipmentsPage"
+participant QuoteShipmentPopup as "<<Popup>>\nQuoteShipmentPopup"
+participant ShipmentDetailsPage as "<<View>>\nShipmentDetailsPage"
+participant ShipmentController as "<<Controller>>\nShipmentController"
+participant ShipmentService as "<<Service>>\nShipmentService"
+participant QuoteResponseToShipmentMapper as "<<Mapper>>\nQuoteResponseToShipmentMapper"
+participant ShipmentResponseMapper as "<<Mapper>>\nShipmentResponseMapper"
+participant ShipmentRequestMapper as "<<Mapper>>\nShipmentRequestMapper"
+participant ShipmentRepository as "<<Repository>>\nShipmentRepository"
+participant EmailService as "<<Service>>\nEmailService"
+participant Database as "<<Database>>\nDatabase"
+
+
+== Client Sequence ==
+
+ref over Client,ReactApplication,LandingPage,UserHomePage : Use Login Sequence
+
+UserHomePage -> ShipmentsPage : Click 'Shipments' link
+deactivate UserHomePage
+activate ShipmentsPage
+
+ShipmentsPage -> ShipmentController : GET /clientShipments
+activate ShipmentController
+
+ShipmentController -> ShipmentService : getClientShipments()
+activate ShipmentService
+
+ShipmentService -> ShipmentRepository : findAllByClientId()
+activate ShipmentRepository
+
+ShipmentRepository -> Database : SELECT * FROM shipments
+activate Database
+Database --> ShipmentRepository : Shipments
+deactivate Database
+
+ShipmentRepository --> ShipmentService : Shipments
+deactivate ShipmentRepository
+
+ShipmentService -> ShipmentResponseMapper : entitiesToResponseModels()
+activate ShipmentResponseMapper
+ShipmentResponseMapper --> ShipmentService : ShipmentsResponse
+deactivate ShipmentResponseMapper
+
+ShipmentService --> ShipmentController : ShipmentsResponse
+deactivate ShipmentService
+
+ShipmentController --> ShipmentsPage : Display shipments
+deactivate ShipmentController
+
+ShipmentsPage -> ShipmentDetailsPage : Click on shipment ID
+deactivate ShipmentsPage
+activate ShipmentDetailsPage
+
+opt Print Shipment Report
+    ShipmentDetailsPage -> ShipmentController : GET /printReport
+    activate ShipmentController
+    ShipmentController -> ShipmentService : generateReport()
+    activate ShipmentService
+    ShipmentService --> Client : Download Report as PDF
+    deactivate ShipmentService
+    deactivate ShipmentController
+else Update Shipment Status
+    ShipmentDetailsPage -> ShipmentController : PUT /updateStatus
+    activate ShipmentController
+    ShipmentController -> ShipmentService : updateStatus()
+    activate ShipmentService
+    ShipmentService -> ShipmentRequestMapper : quoteRequestToShipmentMapper()
+    activate ShipmentRequestMapper
+    ShipmentRequestMapper --> ShipmentService : Shipment
+    deactivate ShipmentRequestMapper
+    ShipmentService -> ShipmentRepository : updateStatus()
+    activate ShipmentRepository
+    ShipmentRepository -> Database : UPDATE shipment
+    activate Database
+    Database --> ShipmentRepository : Success
+    deactivate Database
+    ShipmentRepository --> ShipmentService : Success
+    deactivate ShipmentRepository
+    ShipmentService --> ShipmentController : SuccessResponse
+    deactivate ShipmentService
+    ShipmentController --> ShipmentDetailsPage : Show status update confirmation
+    deactivate ShipmentController
+else Cancel Shipment
+    ShipmentDetailsPage -> ShipmentController : DELETE /cancelShipment
+    activate ShipmentController
+    ShipmentController -> ShipmentService : cancelShipment()
+    activate ShipmentService
+    ShipmentService -> ShipmentRepository : delete()
+    activate ShipmentRepository
+    ShipmentRepository -> Database : DELETE FROM shipment
+    activate Database
+    Database --> ShipmentRepository : Success
+    deactivate Database
+    ShipmentRepository --> ShipmentService : Success
+    deactivate ShipmentRepository
+    ShipmentService --> ShipmentController : SuccessResponse
+    deactivate ShipmentService
+    ShipmentController --> ShipmentDetailsPage : Show cancellation confirmation message
+    deactivate ShipmentController
+    ShipmentDetailsPage --> Client : 'Shipment Canceled Successfully'
+    deactivate ShipmentDetailsPage
+end
+
+
+== Admin Sequence ==
+
+Admin -> ReactApplication : Access website
+activate ReactApplication
+
+ReactApplication -> LandingPage : render()
+activate LandingPage
+
+LandingPage -> AdminHomePage : Admin logs in
+deactivate LandingPage
+activate AdminHomePage
+
+AdminHomePage -> ShipmentController : GET /quotes
+activate ShipmentController
+
+ShipmentController -> ShipmentService : getAllQuotes()
+activate ShipmentService
+
+ShipmentService -> ShipmentRepository : findAllQuotes()
+activate ShipmentRepository
+
+ShipmentRepository -> Database : SELECT * FROM quotes
+activate Database
+Database --> ShipmentRepository : Quotes
+deactivate Database
+
+ShipmentRepository --> ShipmentService : Quotes
+deactivate ShipmentRepository
+
+ShipmentService -> ShipmentResponseMapper : entitiesToResponseModels()
+activate ShipmentResponseMapper
+ShipmentResponseMapper --> ShipmentService : QuotesResponse
+deactivate ShipmentResponseMapper
+
+ShipmentService --> ShipmentController : QuotesResponse
+deactivate ShipmentService
+
+ShipmentController --> AdminHomePage : Display quotes
+deactivate ShipmentController
+
+AdminHomePage -> QuoteShipmentPopup : Select 'View Details' of a quote
+activate QuoteShipmentPopup
+
+opt Accept Quote (Request Shipment)
+    QuoteShipmentPopup -> ShipmentController : PUT /acceptQuote
+    activate ShipmentController
+    ShipmentController -> ShipmentService : acceptQuote()
+    activate ShipmentService
+    ShipmentService -> QuoteResponseToShipmentMapper : toShipment()
+    activate QuoteResponseToShipmentMapper
+    QuoteResponseToShipmentMapper --> ShipmentService : Shipment
+    deactivate QuoteResponseToShipmentMapper
+    ShipmentService -> EmailService : sendShipmentConfirmation()
+    activate EmailService
+    EmailService --> ShipmentService : Success
+    deactivate EmailService
+    ShipmentService --> ShipmentController : SuccessResponse
+    deactivate ShipmentService
+    ShipmentController --> QuoteShipmentPopup : Show acceptance confirmation
+    deactivate ShipmentController
+else Print Shipment Report
+    QuoteShipmentPopup -> ShipmentController : GET /printReport
+    activate ShipmentController
+    ShipmentController -> ShipmentService : generateReport()
+    activate ShipmentService
+    ShipmentService --> Admin : Download Report
+    deactivate ShipmentService
+    deactivate ShipmentController
+else Update Shipment Details
+    QuoteShipmentPopup -> ShipmentController : PUT /updateDetails
+    activate ShipmentController
+    ShipmentController -> ShipmentService : updateDetails()
+    activate ShipmentService
+    ShipmentService -> ShipmentRepository : updateDetails()
+    activate ShipmentRepository
+    ShipmentRepository -> Database : UPDATE shipmentDetails
+    activate Database
+    Database --> ShipmentRepository : Success
+    deactivate Database
+    ShipmentRepository --> ShipmentService : Success
+    deactivate ShipmentRepository
+    ShipmentService --> ShipmentController : SuccessResponse
+    deactivate ShipmentService
+    ShipmentController --> QuoteShipmentPopup : Show details update confirmation
+    deactivate ShipmentController
+else Cancel Shipment
+    QuoteShipmentPopup -> ShipmentController : DELETE /cancelShipment
+    activate ShipmentController
+    ShipmentController -> ShipmentService : cancelShipment()
+    activate ShipmentService
+    ShipmentService -> ShipmentRepository : delete()
+    activate ShipmentRepository
+    ShipmentRepository -> Database : DELETE FROM shipment
+    activate Database
+    Database --> ShipmentRepository : Success
+    deactivate Database
+    ShipmentRepository --> ShipmentService : Success
+    deactivate ShipmentRepository
+    ShipmentService --> ShipmentController : SuccessResponse
+    deactivate ShipmentService
+    ShipmentController --> QuoteShipmentPopup : Show cancellation confirmation message
+    deactivate ShipmentController
+    QuoteShipmentPopup --> Admin : 'Shipment Canceled Successfully'
+    deactivate QuoteShipmentPopup
+end
+
+@enduml

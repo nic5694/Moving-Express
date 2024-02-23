@@ -1,0 +1,186 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!include DEVICONS/java.puml
+!include DEVICONS/mysql.puml
+!include DEVICONS/react.puml
+!include DEVICONS/html5.puml
+!define DEVICONS2 https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons2
+!include DEVICONS2/google.puml
+!include DEVICONS2/npm_original_wordmark.puml
+!include DEVICONS2/typescript.puml
+!include DEVICONS2/javascript.puml
+!define SPRITES https://raw.githubusercontent.com/plantuml-stdlib/gilbarbara-plantuml-sprites/v1.1/sprites
+!include SPRITES/auth0.puml
+
+
+AddElementTag("service", $shape=square(), $bgColor="#557C99", $fontColor="white", $legendText="Service\square")
+AddElementTag("ext_service", $shape=sqaure(), $bgColor="Gray", $fontColor="white" ,$legendText="External Service\square")
+AddElementTag("SPA", $shape=RoundedBoxShape(), $bgColor="#61DAFB", $fontColor="#333333", $legendText="Single-Page Application")
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="#f29111", $fontColor="white", $legendText="Databases")
+Container(auth, "Auth0", "SaaS", "Easy and adaptable authorisation and authentication platform.", $sprite="auth0", $tags="ext_service")
+Container(email, "Gmail SMTP System", "Email Service", "The internal google emailing system.", $sprite="google", $tags="ext_service")
+
+Container(singlePageApp, "Single-Page Application", "TypeScript, ReactJs", "Proivdes all the moving system's functionality to the users via their web browser.", $sprite="react", $tags="SPA")
+Rectangle "API" as API #line.dashed{
+   
+    Package "UserSubDomain"{
+        Container(userController, "User Controller", "Component: Spring Boot REST Controller", "Provides users with the ability to manage their account.", $sprite="java", $tags="service")
+        Container(userService, "User Service", "Component: Sprint Boot Service" ,"Provides the functionalities to get, update, create and delete.", $sprite="java", $tags="service")
+        Container(userResponseMapper, "UserResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entity to a response object.", $sprite="java", $tags="service")
+        Container(userRequestMapper, "UserRequestMapper", "Component: Spring Model Request Mapper", "Provides the functionalities to convert request to entity.", $sprite="java", $tags="service")
+        Container(customerRepository, "User Repository","Component: JPA Repository", "Makes requests to the database to fetch or update data.", $sprite="java", $tags="service")
+        userController -[dashed]-> userService : "**uses**"
+        userService -[dashed]-> customerRepository : "**uses**"
+        userService -[dashed]--> userResponseMapper : "**uses**"
+        userService -[dashed]--> userRequestMapper : "**uses**"
+    }
+    Package "InventorySubDomain"{
+        Container(inventoryController, "Inventory Controller", "Component: Spring Boot REST Controller", "Provides users with the ability to manage and view their inventories.", $sprite="java", $tags="service")
+        Container(inventoryService, "Inventory Service", "Component: Sprint Boot Service","Provides the functionalities to get, update, create and delete.", $sprite="java", $tags="service")
+        Container(inventoryResponseMapper, "InventoryResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entity to a response object.", $sprite="java", $tags="service")
+        Container(inventoryRequestMapper, "InventoryRequestMapper", "Component: Spring Model Request Mapper", "Provides the functionalities to convert request to entity.", $sprite="java", $tags="service")
+        Container(inventoryRepository, "Inventory Repository","Component: JPA Repository", "Makes requests to the database to fetch or update data.", $sprite="java", $tags="service")
+        inventoryController -[dashed]-> inventoryService: "**uses**"
+        inventoryService -[dashed]-> inventoryRepository: "**uses**"
+        inventoryService -[dashed]--> inventoryRequestMapper : "**uses**"
+        inventoryService -[dashed]--> inventoryResponseMapper : "**uses**"
+       
+
+        Container(itemController, "Item Controller", "Component: Spring Boot REST Controller", "Provides users with the ability to manage and view their items.", $sprite="java", $tags="service")
+        Container(itemService, "Item Service", "Component: Sprint Boot Service","Provides the functionalities to get, update, create and delete.", $sprite="java", $tags="service")
+        Container(itemResponseMapper, "ItemResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entity to a response object.", $sprite="java", $tags="service")
+        Container(itemRequestMapper, "Item RequestMapper", "Component: Spring Model Request Mapper", "Provides the functionalities to convert request to entity.", $sprite="java", $tags="service")
+        Container(itemRepository, "Item Repository","Component: JPA Repository", "Makes requests to the database to fetch or update data.", $sprite="java", $tags="service")
+        itemController -[dashed]-> itemService: "**uses**"
+        itemService -[dashed]-> itemRepository: "**uses**"
+        itemService -[dashed]--> itemRequestMapper : "**uses**"
+        itemService -[dashed]--> itemResponseMapper : "**uses**"
+        itemService -[dashed]--> inventoryRepository: "**uses**"
+    }
+    Package "ShipmentSubDomain"{
+        Container(shipmentController, "Shipment Controller", "Component: Spring Boot REST Controller", "Provides users with the ability to manage and view their shipments.", $sprite="java", $tags="service")
+        Container(shipmentService, "Shipment Service","Component: Sprint Boot Service","Provides the functionalities to get, update, create and delete.", $sprite="java", $tags="service")
+        Container(shipmentResponseMapper, "ShipmentResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entity to a response object.", $sprite="java", $tags="service")
+        Container(shipmentRequestMapper, "ShipmentRequestMapper", "Component: Spring Model Request Mapper", "Provides the functionalities to convert request to entity.", $sprite="java", $tags="service")
+        Container(shipmentRepository, "ShipmentRepository","Component: JPA Repository","Makes requests to the database to fetch or update data.", $sprite="java", $tags="service")
+
+        Container(quoteController, "Quote Controller", "Component: Spring Boot REST Controller", "Provides users with the ability to request quotes and manage user quotes.", $sprite="java", $tags="service")
+        Container(quoteService, "Quote Service", "Component: Sprint Boot Service", "Provides the functionalities to get, update, create and delete.", $sprite="java", $tags="service")
+        Container(quoteResponseMapper, "QuoteResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entity to a response object.", $sprite="java", $tags="service")
+        Container(quoteRequestMapper, "QuoteRequestMapper", "Component: Spring Model Request Mapper", "Provides the functionalities to convert request to entity.", $sprite="java", $tags="service")
+        Container(quoteRepository, "Quote Repository","Component: JPA Repository","Makes requests to the database to fetch or update data.", $sprite="java", $tags="service")
+      
+        Container(observerResponseMapper, "ObserverResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entity to a response object.", $sprite="java", $tags="service")
+        Container(observerRequestMapper, "ObserverRequestMapper", "Component: Spring Model Request Mapper", "Provides the functionalities to convert request to entity.", $sprite="java", $tags="service")
+        Container(observerRepository, "ObserverRepository","Component: JPA Repository","Makes requests to the database to fetch or update data.", $sprite="java", $tags="service")
+        Container(observerController, "Observer Controller", "Component: Spring Boot REST Controller", "Provides users with the ability to manage and view their observer codes.", $sprite="java", $tags="service")
+        Container(observerService, "Observer Service", "Component: Sprint Boot Service", "Provides the functioanlities to get, update, create and delete.", $sprite="java", $tags="service")
+
+
+        Container(truckController, "Truck Controller", "Component: Spring Boot REST Controller", "Provides users with the ability to manage and view their observer codes.", $sprite="java", $tags="service")
+        Container(truckService, "Truck Service", "Component: Spring Boot Service", "Provides the functioanlities to get trucks", $sprite="java", $tags="service")
+        Container(truckRepository, "Truck Repository", "Component: Spring Boot Repository", "Provides the functionalities to get, update, create and delete.", $sprite="java", $tags="service")
+        Container(truckResponseMapper, "TruckResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entity to a response object.", $sprite="java", $tags="service")
+
+      
+       
+        Container(addressRepository, "AddressRepository","Component: JPA Repository","Makes requests to the database to fetch or update data.", $sprite="java", $tags="service")
+        Container(addressMapper, "AddressMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entity to a response object.", $sprite="java", $tags="service")
+        Container(inventoryItemsResponseMapper, "InventoryItemsResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entities to a response object.", $sprite="java", $tags="service")
+        Container(quoteResponseToShipmentMapper, "QuoteResponseToShipmentMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entities to a response object.", $sprite="java", $tags="service")
+        Container(shipmentObserversInventoriesItemsResponseMapper, "ShipmentObserversInventoriesItemsResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entities to a response object.", $sprite="java", $tags="service")
+        Container(shipmentInventoriesItemsResponseMapper, "ShipmentInventoriesItemsResponseMapper", "Component: Spring Model Response Mapper", "Provides the functionalities to convert the entities to a response object.", $sprite="java", $tags="service")
+
+        observerController -[dashed]-> observerService: "**uses**"
+        observerService -[dashed]-> observerRepository: "**uses**"
+        observerService -[dashed]--> observerResponseMapper : "**uses**"
+        observerService -[dashed]--> observerRequestMapper : "**uses**"
+        itemService -[dashed]--> observerService: "**uses**"
+
+        shipmentService -[dashed]-> addressRepository: "**uses**"
+        shipmentController -[dashed]-> shipmentService: "**uses**"
+        shipmentService -[dashed]-> shipmentRepository: "**uses**"
+        shipmentService -[dashed]-> inventoryService: "**uses**"
+        shipmentService -[dashed]-> customerRepository: "**uses**"
+        shipmentService -[dashed]--> shipmentResponseMapper : "**uses**"
+        shipmentService -[dashed]--> shipmentRequestMapper : "**uses**"
+        shipmentService -[dashed]--> userService : "**uses**"
+        shipmentService -[dashed]--> observerRepository : "**uses**"
+        shipmentService -[dashed]--> observerService : "**uses**"
+        shipmentService -[dashed]--> itemService : "**uses**"
+        shipmentService -[dashed]--> inventoryItemsResponseMapper : "**uses**"
+        shipmentService -[dashed]--> quoteResponseToShipmentMapper : "**uses**"
+        shipmentService -[dashed]--> shipmentObserversInventoriesItemsResponseMapper : "**uses**"
+        shipmentService -[dashed]--> shipmentInventoriesItemsResponseMapper : "**uses**"
+
+        itemService -[dashed]--> shipmentRepository: "**uses**"
+        
+        shipmentService -[dashed]-> addressMapper: "**uses**"
+        
+        quoteController -[dashed]-> quoteService: "**uses**"
+        quoteService -[dashed]-> quoteRepository: "**uses**"
+        quoteService -[dashed]--> quoteResponseMapper : "**uses**"
+        quoteService -[dashed]--> quoteRequestMapper : "**uses**"
+
+        truckService -[dashed]-> truckResponseMapper: "**uses**"
+        truckController -[dashed]-> truckService: "**uses**"
+        truckService -[dashed]--> truckRepository : "**uses**"
+        
+       
+      
+       
+      
+    }
+    Package "Config"{
+        Package "Security"{
+            Container(springSecurityConfigurationBeans, "Spring Security Bean Configuration", "Component: Spring Boot Configuration Beans", "Configures Auth0 usage in the system.", $sprite="java", $tags="service")
+            Package "controllers"{
+                Container(securityController, "Security Controller", "Component: Spring Boot Rest Controller", "Provides users with the ability to sucessfully log in with their JWT tokens.", $sprite="java", $tags="service")
+            }
+            Package "filters"{
+                Container(ResponseHeaderFilter, "Response Header Filter", "Component: Spring Boot Component Filter", "Provides the system with the ability to filter all API request response headers according to specific criteria.", $sprite="java", $tags="service")
+            }
+            Package "Service"{
+                Container(Auth0LoginService, "Auth0 Login Service", "Component: Spring Boot Service", "Provides the functionalities to login and redirect users with their JWT tokens.", $sprite="java", $tags="service")
+                Container(Auth0ManagementService, "Auth0 Management Service", "Component: Spring Boot Service", "Provides the functionalities to manage users within auth0.", $sprite="java", $tags="service")
+            }
+            springSecurityConfigurationBeans -[dashed]-> auth: "**Uses**\n[HTTPS/JSON]"
+            springSecurityConfigurationBeans -[dashed]-> Auth0LoginService: "**Uses**"
+            springSecurityConfigurationBeans -[dashed]-> Auth0ManagementService: "**Uses**
+            ResponseHeaderFilter -[dashed]-> securityController: "**Inserted By**"
+            securityController -[dashed]-> Auth0LoginService: "**Uses**"
+            securityController -[dashed]-> Auth0ManagementService: "**Uses**"
+            
+
+        }
+        ' Container(ErrorMessage, "ErrorMessage", "Error Message", "Component ")
+        ResponseHeaderFilter -[dashed]-> springSecurityConfigurationBeans: "**Is Configured by**"
+    }
+    Package "Util"{
+        Container(EmailUtil, "Spring Email Util Component", "Component: Spring Boot Component", "Generates and sends notification email to target adress.", $sprite="java", $tags="service")
+        EmailUtil -[dashed]-> email : "**Sends email using**\n[SSL/SMTP]"
+        quoteService -[dashed]--> EmailUtil: "**uses**"
+        shipmentService -[dashed]--> EmailUtil: "**uses**"
+    }
+        ResponseHeaderFilter -[dashed]-> inventoryController: "**Direct Request**"
+        ResponseHeaderFilter -[dashed]-> itemController: "**Direct Request**"
+        ResponseHeaderFilter -[dashed]-> userController: "**Direct Request**"
+        ResponseHeaderFilter -[dashed]-> shipmentController: "**Direct Request**"
+        ResponseHeaderFilter -[dashed]-> observerController: "**Direct Request**"
+        ResponseHeaderFilter -[dashed]-> quoteController: "**Direct Request**"
+
+}
+inventoryService -[dashed]-> shipmentRepository: "**uses**"
+ContainerDb(database, "Database", "MySQL", "Stores client data, shipment information and user contact details", $sprite="mysql", $tags="storage")
+inventoryRepository -[dashed]-> database: "**Makes calls via**\nSQL/TCP\n[JDBC]"
+itemRepository -[dashed]-> database: "**Makes calls via**\nSQL/TCP\n[JDBC]"
+shipmentRepository -[dashed]-> database: "**Makes calls via**\nSQL/TCP\n[JDBC]"
+addressRepository -[dashed]-> database: "**Makes calls via**\nSQL/TCP\n[JDBC]"
+customerRepository -[dashed]-> database: "**Makes calls via**\nSQL/TCP\n[JDBC]"
+singlePageApp -[dashed]-> ResponseHeaderFilter : "**Makes API calls to**\n[HTTPS/JSON]"
+observerRepository -[dashed]-> database: "**Makes calls via**\nSQL/TCP\n[JDBC]"
+quoteRepository -[dashed]-> database: "**Makes calls via**\nSQL/TCP\n[JDBC]"
+
+SHOW_LEGEND()
+@enduml

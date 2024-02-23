@@ -1,0 +1,47 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor DarkSeaGreen
+    BorderColor DarkSlateGray
+    ArrowColor Black
+    ActorBorderColor black
+    ActorFontName Courier
+    ActorBackgroundColor<< Human >> Gold
+}
+
+actor  "Client" #Green
+actor  "Van Driver" #Red
+actor  "Moving Estimator" #Orange
+actor  "System Administrator" as Admin #Pink
+
+
+rectangle "Moving Express System" {
+    rectangle "Authentication Subsystem" {
+      usecase "Create account"
+      usecase "Log in with username and password"
+      usecase "Modify account details"
+      usecase "Delete account"
+      usecase "Manage user roles"
+    }
+}
+
+
+
+
+"Client" -[#Blue]-> "Log in with username and password"
+"Client" -[#Blue]-> "Create account"
+"Client" -[#Blue]-> "Modify account details"
+"Client" -[#Blue]-> "Delete account"
+
+"Van Driver" -[#Purple]-> "Log in with username and password"
+
+"Moving Estimator" -[#Red]-> "Log in with username and password"
+
+Admin --|> "Client"
+Admin --|> "Van Driver"
+Admin --|> "Moving Estimator"
+Admin --> "Manage user roles"
+
+@enduml

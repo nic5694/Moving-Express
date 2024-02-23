@@ -1,0 +1,32 @@
+@startuml
+title Client Login Action Sequence Diagram
+
+actor Client
+
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LandingPage as "<<View>>\nLandingPage"
+participant ShipmentQuotePage as "<<View>>\nShipmentQuotePage"
+participant UserHomePage as "<<View>>\nUserHomePage"
+
+Client -> ReactApplication : Access website
+activate ReactApplication
+
+ReactApplication -> LandingPage : render()
+activate LandingPage
+
+alt Client is logged in
+    LandingPage -> UserHomePage : Navigate to profile after login
+    deactivate LandingPage
+    activate UserHomePage
+else
+    LandingPage -> ShipmentQuotePage : Select 'Shipment Quote'
+    deactivate LandingPage
+    activate ShipmentQuotePage
+end
+
+alt Client is logged in
+    UserHomePage -> ShipmentQuotePage : Select 'Request Quote'
+    deactivate UserHomePage
+    activate ShipmentQuotePage
+end
+@enduml

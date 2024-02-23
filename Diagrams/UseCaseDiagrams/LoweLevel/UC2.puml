@@ -1,0 +1,60 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+
+skinparam note {
+ FontSize 10
+}
+skinparam usecase {
+   BackgroundColor DarkSeaGreen
+   BorderColor DarkSlateGray
+   ArrowColor Black
+   ActorBorderColor black
+   ActorBackgroundColor<< Human >> Gold
+}
+
+actor Client as "Client" #LightBlue
+actor "Moving Estimator" as MovingEstimator #LightGreen
+actor "Shipment Reviewer" as ShipmentReviewer #Blue
+actor "Truck Driver" as VanDriver #Orange
+
+
+rectangle "Moving Express System" {
+   rectangle "UseCase 2 & 12" {
+     usecase "1.0 Request a Quote" as UC1 #LightSeaGreen
+     usecase "3.0 Estimate Item Value" as UC3 #LightSeaGreen
+     usecase "4.0 Estimate Shipment" as UC4 #LightSeaGreen
+     usecase "2.0 Request Shipment" as UC2 #LightSeaGreen
+     usecase "12.0 Cancel Shipment" as UC12 #LightSeaGreen
+     usecase "12.1 Refund Process" as UC12_1 #LightSeaGreen
+     usecase "5.0 Monitor shipment" as UC5 #LightSeaGreen
+
+     note "Optional if the client changes their mind" as N1
+     note "Optional if applicable based on policy and circumstances" as N3
+   }
+}
+
+Client -- UC2
+
+UC4 --[#LightSeaGreen]--- MovingEstimator
+
+UC5 --[#Red]--- VanDriver
+
+UC1 -- ShipmentReviewer
+UC12_1 -- ShipmentReviewer
+
+UC2 ..> UC1 : <<Includes>>
+UC2 ..> UC3 : <<Includes>>
+UC2 ..> UC4 : <<Includes>>
+UC2 ..> UC5 : <<Includes>>
+
+UC2 <.. N1 : <<Extends>>
+N1 .. (UC12)
+
+
+
+UC12 <.. N3 : <<Extends>>
+N3 .. (UC12_1)
+
+@enduml

@@ -1,0 +1,64 @@
+{
+	"info": {
+		"_postman_id": "a02bb418-2304-4089-b152-d5488137d30a",
+		"name": "Authentication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "24061727-a02bb418-2304-4089-b152-d5488137d30a"
+	},
+	"item": [
+		{
+			"name": "Authorized role base endpoint test",
+			"id": "584cc454-4bce-4fa8-a4f1-2b8fdf5a5f59",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/movingexpress/quotes/test",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"movingexpress",
+						"quotes",
+						"test"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "public endpoint requiing no authentication",
+			"id": "4800b524-aeab-4ee8-a9aa-a281649e6279",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/v1/movingexpress/quotes/public",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"movingexpress",
+						"quotes",
+						"public"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

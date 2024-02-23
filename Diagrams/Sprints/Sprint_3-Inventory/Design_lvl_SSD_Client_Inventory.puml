@@ -1,0 +1,227 @@
+@startuml
+title Client Inventory Management Sequence Diagram
+
+actor Client
+
+participant ReactApplication as "<<View>>\nReact Application"
+participant LandingPage as "<<View>>\nLanding Page"
+participant UserHomePage as "<<View>>\nUser Home Page"
+participant ShipmentsPage as "<<View>>\nShipments Page"
+participant ShipmentDetailsPage as "<<View>>\nShipment Details Page"
+participant Popup as "<<Component>>\nPopup"
+participant InventoryController as "<<Controller>>\nInventory Controller"
+participant InventoryRequestMapper as "<<Mapper>>\nRequest Mapper"
+participant "InventoryRequestModel" as RequestModel
+participant InventoryService as "<<Service>>\nInventory Service"
+participant "InventoryEntity" as Entity
+participant InventoryRepository as "<<Repository>>\nInventory Repository"
+participant Database as "<<Database>>"
+participant InventoryResponseMapper as "<<Mapper>>\nResponse Mapper"
+participant "InventoryResponseModel" as ResponseModel
+
+ref over Client, ReactApplication, LandingPage, UserHomePage : Authentication and Navigation Sequence
+
+UserHomePage -> ShipmentsPage : Clicks 'Shipments' link
+activate ShipmentsPage
+
+ShipmentsPage -> ShipmentDetailsPage : Selects a specific Shipment for details
+activate ShipmentDetailsPage
+deactivate ShipmentsPage
+' Get All Inventories
+ShipmentDetailsPage -> InventoryController : GET /api/v1/movingexpress/shipments/{shipmentId}/inventories
+activate InventoryController
+
+InventoryController -> InventoryService : getInventories(shipmentId)
+activate InventoryService
+
+InventoryService -> InventoryRepository : findByShipmentId(shipmentId)
+activate InventoryRepository
+
+InventoryRepository -> Database : SELECT * FROM inventories WHERE id = shipmentId
+activate Database
+Database --> InventoryRepository : Inventories Data Retrieved
+deactivate Database
+
+InventoryRepository --> InventoryService : Inventories Data
+deactivate InventoryRepository
+
+' Mapping from Entities to Response Models
+InventoryService -> InventoryResponseMapper : entitiesToResponseModels(Inventories)
+activate InventoryResponseMapper
+InventoryResponseMapper -> ResponseModel : Convert Entities to Response Models
+activate ResponseModel
+ResponseModel --> InventoryService : Response Models Ready
+deactivate ResponseModel
+deactivate InventoryResponseMapper
+
+InventoryService --> InventoryController : Response Models Data
+deactivate InventoryService
+InventoryController --> ShipmentDetailsPage : Display Inventories List
+deactivate InventoryController
+
+' Get Inventory by Id
+opt Get Inventory by ID
+    ShipmentDetailsPage -> Popup : Clicks 'Add Inventory' button
+    activate Popup
+    Popup -> InventoryController : GET /api/v1/movingexpress/shipments/{shipmentId}/inventories/{inventoryId}
+    activate InventoryController
+
+    InventoryController -> InventoryService : getInventoryById(inventoryId)
+    activate InventoryService
+
+    InventoryService -> InventoryRepository : findByInventoryId(inventoryId)
+    activate InventoryRepository
+
+    InventoryRepository -> Database : SELECT * FROM inventories WHERE id = inventoryId
+    activate Database
+    Database --> InventoryRepository : Inventory Data Retrieved
+    deactivate Database
+
+    InventoryRepository --> InventoryService : Inventory Data
+    deactivate InventoryRepository
+
+    ' Mapping from Entity to Response Model
+    InventoryService -> InventoryResponseMapper : entityToResponseModel(Inventory)
+    activate InventoryResponseMapper
+    InventoryResponseMapper -> ResponseModel : Convert Entity to Response Model
+    activate ResponseModel
+    ResponseModel --> InventoryService : Response Model Ready
+    deactivate ResponseModel
+    deactivate InventoryResponseMapper
+
+    InventoryService --> InventoryController : Response Model Data
+    deactivate InventoryService
+    InventoryController --> Popup : Show Inventory Details
+    Popup --> ShipmentDetailsPage : Closes Popup with "Inventory Details Displayed Successfully" Message
+    deactivate Popup
+    deactivate InventoryController
+end
+
+opt Add New Inventory
+    ShipmentDetailsPage -> Popup : Clicks 'Add Inventory' button
+    activate Popup
+    Popup -> InventoryController : POST /api/v1/movingexpress/shipments/{shipmentId}/inventories
+    activate InventoryController
+
+    InventoryController -> InventoryRequestMapper : addInventory(inventoryRequestModel)
+    activate InventoryRequestMapper
+
+    ' Mapping from Request Model to Entity
+    InventoryRequestMapper -> RequestModel : Map to Entity
+    activate RequestModel
+    deactivate InventoryRequestMapper
+
+    RequestModel -> InventoryService : Passing Request Data
+    activate InventoryService
+
+    deactivate RequestModel
+    InventoryService -> Entity : Set Details
+    activate Entity
+
+    Entity --> InventoryService : Entity Prepared
+    deactivate Entity
+    deactivate RequestModel
+
+    ' Persisting the Entity
+    InventoryService -> InventoryRepository : save(Entity)
+    activate InventoryRepository
+    InventoryRepository -> Database : INSERT INTO inventories
+    activate Database
+    Database --> InventoryRepository : Insert Successful
+    deactivate Database
+    InventoryRepository --> InventoryService : Entity with ID
+    deactivate InventoryRepository
+
+    ' Mapping from Entity to Response Model
+    InventoryService -> InventoryResponseMapper : entityToResponseModel(Inventory)
+    activate InventoryResponseMapper
+    InventoryResponseMapper -> ResponseModel : Convert Entity to Response Model
+    activate ResponseModel
+    ResponseModel --> InventoryService : Response Model Prepared
+    deactivate InventoryResponseMapper
+    deactivate ResponseModel
+    InventoryService --> InventoryController : Inventory Response Model
+    deactivate InventoryService
+    InventoryController --> Popup : Show "Inventory Added Successfully" Confirmation
+    Popup --> ShipmentDetailsPage : Closes Popup
+    deactivate Popup
+    deactivate InventoryController
+
+end
+
+opt Update Inventory
+    ShipmentDetailsPage -> Popup : Clicks 'Update Inventory' button
+    activate Popup
+    Popup -> InventoryController : PUT /api/v1/movingexpress/shipments/{shipmentId}/inventories/{inventoryId}
+    activate InventoryController
+
+    InventoryController -> InventoryRequestMapper : updateInventory(inventoryRequestModel)
+    activate InventoryRequestMapper
+    ' Mapping from Request Model to Entity for Update
+    InventoryRequestMapper -> RequestModel : Map to Entity for Update
+    activate RequestModel
+    deactivate InventoryRequestMapper
+
+    RequestModel -> InventoryService : Passing the model Data
+    deactivate RequestModel
+    activate InventoryService
+    InventoryService -> Entity : Apply Updates
+    activate Entity
+    Entity --> InventoryService : Updated Entity
+    deactivate Entity
+    ' Persisting the Updated Entity
+    InventoryService -> InventoryRepository : save(Updated Entity)
+    activate InventoryRepository
+    InventoryRepository -> Database : UPDATE inventories SET ... WHERE id = inventoryId
+    activate Database
+    Database --> InventoryRepository : Update Successful
+    deactivate Database
+    InventoryRepository --> InventoryService : Entity with Updated Details
+    deactivate InventoryRepository
+
+    ' Mapping from Updated Entity to Response Model
+    InventoryService -> InventoryResponseMapper : entityToResponseModel(Updated Inventory)
+    activate InventoryResponseMapper
+    InventoryResponseMapper -> ResponseModel : Convert Updated Entity to Response Model
+    activate ResponseModel
+    ResponseModel --> InventoryService : Updated Response Model Ready
+    deactivate ResponseModel
+    deactivate InventoryResponseMapper
+
+    InventoryService --> InventoryController : Updated Inventory Response Model
+    deactivate InventoryService
+    InventoryController --> Popup : Show "Inventory Updated Successfully" Confirmation
+    Popup --> ShipmentDetailsPage : Closes Popup
+    deactivate Popup
+    deactivate InventoryController
+end
+
+opt Delete Inventory
+    ShipmentDetailsPage -> Popup : Clicks 'Delete Inventory' button
+    activate Popup
+    Popup -> InventoryController : DELETE /api/v1/movingexpress/shipments/{shipmentId}/inventories/{inventoryId}
+    activate InventoryController
+
+    InventoryController -> InventoryService : deleteInventory(inventoryId)
+    activate InventoryService
+
+    InventoryService -> InventoryRepository : deleteById(inventoryId)
+    activate InventoryRepository
+    InventoryRepository -> Database : DELETE FROM inventories WHERE id = inventoryId
+    activate Database
+    Database --> InventoryRepository : Deletion Successful
+    deactivate Database
+    InventoryRepository --> InventoryService : Confirmation of Deletion
+    deactivate InventoryRepository
+
+    InventoryService --> InventoryController : Confirmation of Deletion
+    deactivate InventoryService
+    InventoryController --> Popup : Show "Inventory Deleted Successfully" Confirmation
+    Popup --> ShipmentDetailsPage : Closes Popup
+    deactivate Popup
+    deactivate InventoryController
+    deactivate ShipmentDetailsPage
+end
+
+
+@enduml

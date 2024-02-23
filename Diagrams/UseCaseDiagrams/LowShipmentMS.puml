@@ -1,0 +1,142 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor DarkSeaGreen
+    BorderColor DarkSlateGray
+    ArrowColor Black
+    ActorBorderColor black
+    ActorFontName Courier
+    ActorBackgroundColor<< Human >> Gold
+}
+
+actor Client as "Client" #LightBlue
+actor "Moving Estimator" as MovingEstimator #LightGreen
+actor "Truck Driver" as VanDriver #Orange
+actor "Moving Crew" as MovingCrew #Purple
+actor Management as "Management" #Yellow
+actor "Shipment Reviewer" as ShipmentReviewer #Blue
+actor "Observer" as Observer #LightCyan
+
+rectangle "Moving Express System" {
+    rectangle UseCases {
+      usecase "1.0 Request a Quote" as UC1 #LightSeaGreen
+      usecase "Specify Quote Details" as UC1_1
+      usecase "Validate Client Information" as UC1_2
+
+      usecase "2.0 Request Shipment" as UC2 #LightSeaGreen
+      usecase "Specify Shipment Details" as UC2_1
+      usecase "Validate Shipment Information" as UC2_2
+
+      usecase "3.0 Estimate Item Value" as UC3 #LightSeaGreen
+      usecase "Specify Item Details" as UC3_1
+      usecase "Display Estimated Value" as UC3_2
+
+      usecase "4.0 Estimate Shipment" as UC4 #LightSeaGreen
+      usecase "Provide Shipment Details" as UC4_1
+      usecase "Calculate Shipment Cost" as UC4_2
+
+      usecase "5.0 overview shipment" as UC5 #LightSeaGreen
+      usecase "Monitor Shipment Progress" as UC5_1
+      usecase "Verify Shipment Information" as UC5_2
+
+      usecase "8.0 Transport Shipment" as UC8 #LightSeaGreen
+      usecase "Assign Shipment to Truck" as UC8_1
+      usecase "Load Shipment onto Truck" as UC8_2
+
+      usecase "6.0 Pack Shipment" as UC6 #LightSeaGreen
+      usecase "Label Packages" as UC6_1
+      usecase "Pack Items/Boxes" as UC6_2
+
+      usecase "7.0 Load Shipment" as UC7 #LightSeaGreen
+      usecase "Inspect Shipment Contents" as UC7_1
+      usecase "Load Items/Boxes" as UC7_2
+
+      usecase "9.0 Unload Shipment" as UC9 #LightSeaGreen
+      usecase "Unload items/Boxes" as UC9_1
+      usecase "Inspect Shipment Contents" as UC9_2
+
+      usecase "10.0 Unpack Shipment" as UC10 #LightSeaGreen
+      usecase "Unpack Items/Boxes" as UC10_1
+      usecase "Verify Client Satisfaction" as UC10_2
+
+      usecase "11.0 Generate Shipment Reports" as UC11 #LightSeaGreen
+      usecase "Generate Shipment Status Report" as UC11_1
+      usecase "Generate Driver Manifest Report" as UC11_2
+
+      usecase "12.0 Cancel Shipment" as UC12 #LightSeaGreen
+      usecase "Request Shipment Cancellation" as UC12_1
+      usecase "Verify Cancellation Request" as UC12_2
+
+    }
+}
+
+UC1 <. UC1_1 : <<extend>>
+UC1 <. UC1_2 : <<extend>>
+
+UC2 <. UC2_1 : <<extend>>
+UC2 <. UC2_2 : <<extend>>
+
+UC3 <. UC3_1 : <<extend>>
+UC3 <. UC3_2 : <<extend>>
+
+UC4 <. UC4_1 : <<extend>>
+UC4 <. UC4_2 : <<extend>>
+
+UC5 <. UC5_1 : <<extend>>
+UC5 <. UC5_2 : <<extend>>
+
+UC6 <. UC6_1 : <<extend>>
+UC6 <. UC6_2 : <<extend>>
+
+UC7 <. UC7_1 : <<extend>>
+UC7 <. UC7_2 : <<extend>>
+
+UC8 <. UC8_1 : <<extend>>
+UC8 <. UC8_2 : <<extend>>
+
+UC9 <. UC9_1 : <<extend>>
+UC9 <. UC9_2 : <<extend>>
+
+UC10 <. UC10_1 : <<extend>>
+UC10 <. UC10_2 : <<extend>>
+
+UC11 <. UC11_1 : <<extend>>
+UC11 <. UC11_2 : <<extend>>
+
+UC12 <. UC12_1 : <<extend>>
+UC12 <. UC12_2 : <<extend>>
+
+Client --|> Observer
+
+Client ---> UC12
+Client ---> UC6
+Client ---> UC3
+Client ---> UC10
+
+Observer --> UC1
+Observer --> UC2
+Observer --> UC5
+
+MovingEstimator --> UC2
+MovingEstimator --> UC4
+MovingEstimator --> UC3
+
+VanDriver --> UC8
+
+MovingCrew -[#Orange]--> UC6
+MovingCrew -[#Orange]--> UC5
+MovingCrew -[#Orange]--> UC7
+MovingCrew -[#Orange]--> UC9
+MovingCrew -[#Orange]--> UC10
+
+UC11 <-- Management
+VanDriver --> UC11
+
+UC2 <-- ShipmentReviewer
+UC1 <-- ShipmentReviewer
+UC12 <-- ShipmentReviewer
+UC5 <-- ShipmentReviewer
+
+@enduml

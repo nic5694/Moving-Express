@@ -1,0 +1,58 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.LandingPContainer {
+    background-image: url(./Images/LP_BG.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.blackGradient{
+    background: linear-gradient(rgba(0,0,0,0),rgba(0, 0, 0, 0.9));
+}
+
+.UserHomePageContainer {
+    background-image: url(./Images/HomePage-BG2.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+@keyframes moveAndFlip {
+    0% {
+      transform: translateX(0px) scaleX(1);
+    }
+
+
+    100% {
+        transform: translateX(190px) scaleX(1);
+        filter: opacity(0);
+    }
+
+}
+
+.truck {
+    animation: moveAndFlip 4s ease-in-out infinite;
+}
+
+@font-face {
+    font-family: NotoColorEmojiLimited;
+    unicode-range: U+1F1E6-1F1FF;
+    src: url(https://raw.githack.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf);
+}
+
+.countryDiv {
+    font-family: 'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 
+    'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 
+    'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+.my-popup-content {
+    background-color: white;
+    width: 85%;
+    border-radius: 10px;
+}
+
+.my-popup-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+}

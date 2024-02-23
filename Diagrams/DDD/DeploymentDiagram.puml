@@ -1,0 +1,59 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+!include <archimate/Archimate>
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!include DEVICONS/java.puml
+!include DEVICONS/mysql.puml
+!include DEVICONS/react.puml
+!include DEVICONS/html5.puml
+scale 0.5
+!include DEVICONS/javascript.puml
+!define DEVICONS2 https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons2
+!include DEVICONS2/google.puml
+!include DEVICONS2/npm_original_wordmark.puml
+!define SPRITES https://raw.githubusercontent.com/plantuml-stdlib/gilbarbara-plantuml-sprites/v1.1/sprites
+!include SPRITES/auth0.puml
+LAYOUT_TOP_DOWN()
+AddElementTag("service", $shape=square(), $bgColor="#557C99", $fontColor="white", $legendText="Service\square")
+AddElementTag("ext_service", $shape=sqaure(), $bgColor="Gray", $fontColor="white" ,$legendText="External Service\square")
+AddElementTag("SPA", $shape=RoundedBoxShape(), $bgColor="#61DAFB", $fontColor="#333333", $legendText="Single-Page Application")
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="#f29111", $fontColor="white", $legendText="Databases")
+AddElementTag("webApp", $shape=RoundedBoxShape(), $bgColor="#f06529", $fontColor="white", $legendText="Web Application")
+' Define deployment nodes
+node "Customers Computer: [Microsoft Windows, Apple Mac OS X, Linux]"{
+node "Web Broser \n[Deployment Node: Chrome and Firefox]" {
+  Container(spa, "Single-Page Application", "TypeScript, ReactJs", "Provides a GUI interface that contains all the functionalities of the Spring boot application. Uses React Router framework to handle the multiple pages. Uses multiple npm libraries to display and format content.", $sprite="react",$tags="SPA")
+}
+}
+
+Cloud vercell as "Vercell \n[Deployment Node: Node.js/18.x]"{
+      Container(staticContent, "Web Application","Single page application build and compiled into ReactJs", "Delivers the statis content to the single page application.",$tags="webApp")
+}
+Cloud DigitalOcean as "Digital Ocean \n[Deployment Node: Digital Ocean Toronto Data Center (TOR1)]"{
+    node "movingexpress-api\n[Deployment Node: Ubuntu 22]"{
+  node "OpenJDK 17 Runtime Environment \n [Deployment Node: OpenJDK Runtime Environment/17]" {
+   Container(api, "Moving Express API", "Spring boot: Java", "Provides shipment management functionality and information for the moving company Moving Express via JSON/HTTPS API.", $sprite="java", $tags="service")
+  }
+    }
+    node "MySQL Server\n [Deployment Node: DigitalOCean MySQL 8\n[VPC Network: default-tor1 10.118.0.0/20"{
+  ContainerDb(database, "Database", "MySQL", "Stores client data, shipment information and user contact details", $sprite="mysql", $tags="storage")
+  }
+}
+
+
+
+Container(auth, "Auth0", "SaaS", "Easy and adaptable authorisation and authentication platform.", $sprite="auth0", $tags="ext_service")
+
+
+Container(email, "Gmail SMTP System", "Email Service", "The internal google emailing system.", $sprite="google", $tags="ext_service")
+
+
+' Define relationships
+spa -[dashed]-> api : "Makes API calls to\n[JSON/HTTPS]"
+api -[dashed]-> database : "Reads from and wirtes to\nSQL/TCP\n[JDBC]"
+api -[dashed]-> auth : "Authenticates with\n[OAuth2/OpenID]"
+api -[dashed]-> email : "Sends emails\n[SMTP/TCP/IP]"
+staticContent -[dashed]-> spa : "Delivers static content "
+SHOW_LEGEND()
+@enduml

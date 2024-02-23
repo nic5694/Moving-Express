@@ -1,0 +1,219 @@
+@startuml
+title Client Actions in Request and Manage Quote Sequence Diagram
+
+actor Client
+
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LandingPage as "<<View>>\nLandingPage"
+participant ShipmentQuotePage as "<<View>>\nShipmentQuotePage"
+participant UserHomePage as "<<View>>\nUserHomePage"
+participant QuoteController as "<<Controller>>\nQuoteController"
+participant QuoteRequestModel as "<<Model>>\nQuoteRequestModel"
+participant EventRequestModel as "<<Model>>\nEventRequestModel"
+participant QuoteService as "<<Service>>\nQuoteService"
+participant QuoteRequestMapper as "<<Mapper>>\nQuoteRequestMapper"
+participant QuoteEntity as "<<Entity>>\nQuote"
+participant QuoteRepository as "<<Repository>>\nQuoteRepository"
+participant Database as "<<Database>>"
+participant QuoteResponseMapper as "<<Mapper>>\nQuoteResponseMapper"
+participant QuoteResponseModel as "<<Model>>\nQuoteResponseModel"
+participant EventResponseModel as "<<Model>>\nEventResponseModel"
+
+Client -> ReactApplication : Access website
+activate ReactApplication
+
+ReactApplication -> LandingPage : render()
+activate LandingPage
+deactivate ReactApplication
+
+alt Client has no account
+    LandingPage -> ShipmentQuotePage : Select 'Shipment Quote'
+    deactivate LandingPage
+    activate ShipmentQuotePage
+else Client is logged in
+    LandingPage -> UserHomePage : Navigate to profile after login
+    deactivate LandingPage
+    activate UserHomePage
+    UserHomePage -> ShipmentQuotePage : Select 'Request Quote'
+    deactivate UserHomePage
+end
+
+
+deactivate LandingPage
+
+ShipmentQuotePage --> Client : Display quote form
+Client -> ShipmentQuotePage : Fill up quote details and submit
+
+ShipmentQuotePage -> QuoteController : POST api/v1/movingexpress/quotes/request
+activate QuoteController
+
+QuoteController -> QuoteRequestModel : send quoteRequestModel
+activate QuoteService
+activate QuoteRequestModel
+QuoteRequestModel -> QuoteService : addQuote(quoteRequestModel)
+deactivate QuoteRequestModel
+
+QuoteService -> QuoteRequestMapper : mapRequestToEntity(quoteRequestModel)
+activate QuoteRequestMapper
+
+QuoteRequestMapper -> QuoteEntity : Instantiate from form data
+activate QuoteEntity
+
+QuoteEntity -> QuoteRequestMapper : Entity ready
+deactivate QuoteEntity
+QuoteRequestMapper -> QuoteService : Convert to Entity
+deactivate QuoteRequestMapper
+deactivate QuoteRequestModel
+
+
+QuoteService -> QuoteRepository : save(quoteEntity)
+activate QuoteRepository
+QuoteRepository -> Database : INSERT INTO quotes
+activate Database
+Database --> QuoteRepository : Success
+deactivate Database
+QuoteRepository --> QuoteService : savedQuote
+deactivate QuoteRepository
+
+QuoteService -> QuoteResponseMapper : mapEntityToResponse(savedQuote)
+activate QuoteResponseMapper
+QuoteResponseMapper -> QuoteResponseModel : Create from Entity
+activate QuoteResponseModel
+deactivate QuoteResponseMapper
+QuoteResponseModel --> QuoteService : Response ready
+deactivate QuoteResponseModel
+
+QuoteService --> QuoteController : quoteResponseModel
+deactivate QuoteService
+QuoteController --> ShipmentQuotePage : Display success message
+deactivate QuoteController
+
+opt Get All Quotes by Status
+    ShipmentQuotePage -> QuoteController : GET api/v1/movingexpress/quotes
+    activate QuoteController
+
+    QuoteController -> QuoteService : getAllQuotes(quoteStatus)
+    activate QuoteService
+    QuoteService -> QuoteRepository : findAllByQuoteStatus(quoteStatus)
+    activate QuoteRepository
+    QuoteRepository -> Database : SELECT * WHERE status = quoteStatus
+    activate Database
+    Database --> QuoteRepository : Quotes data
+    deactivate Database
+    QuoteRepository --> QuoteService : quotesList
+    deactivate QuoteRepository
+
+    QuoteService -> QuoteResponseMapper : mapEntitiesToResponses(quotesList)
+    activate QuoteResponseMapper
+    QuoteResponseMapper -> QuoteResponseModel : Create list from Entities
+    activate QuoteResponseModel
+    deactivate QuoteResponseMapper
+    QuoteResponseModel --> QuoteService : Response list ready
+    deactivate QuoteResponseModel
+
+    QuoteService --> QuoteController : quotesResponseModels
+    deactivate QuoteService
+    QuoteController --> ShipmentQuotePage : Display quotes list
+    deactivate QuoteController
+end
+
+opt Get Quote by ID
+    ShipmentQuotePage -> QuoteController : GET api/v1/movingexpress/quotes/{quoteId}
+    activate QuoteController
+
+    QuoteController -> QuoteService : getQuote(quoteId)
+    activate QuoteService
+    QuoteService -> QuoteRepository : findByQuoteIdentifier_QuoteId(quoteId)
+    activate QuoteRepository
+    QuoteRepository -> Database : SELECT * FROM quotes WHERE id = quoteId
+    activate Database
+    Database --> QuoteRepository : Quote data
+    deactivate Database
+    QuoteRepository --> QuoteService : quoteEntity
+    deactivate QuoteRepository
+
+    QuoteService -> QuoteResponseMapper : mapEntityToResponse(quoteEntity)
+    activate QuoteResponseMapper
+    QuoteResponseMapper -> QuoteResponseModel : Create from Entity
+    activate QuoteResponseModel
+    deactivate QuoteResponseMapper
+    QuoteResponseModel --> QuoteService : Response ready
+    deactivate QuoteResponseModel
+
+    QuoteService --> QuoteController : quoteResponseModel
+    deactivate QuoteService
+    QuoteController --> ShipmentQuotePage : Display quote details
+    deactivate QuoteController
+end
+
+opt Get Quotes by Email
+    ShipmentQuotePage -> QuoteController : GET api/v1/movingexpress/quotes/Email/{email}
+    activate QuoteController
+
+    QuoteController -> QuoteService : getQuoteByEmail(email)
+    activate QuoteService
+
+    QuoteService -> QuoteRepository : findAllByContactDetailsEmailAddress(email)
+    activate QuoteRepository
+    QuoteRepository -> Database : SELECT * FROM quotes WHERE email = ?
+    activate Database
+    Database --> QuoteRepository : Quotes data
+    deactivate Database
+    QuoteRepository --> QuoteService : quotesList
+    deactivate QuoteRepository
+
+    QuoteService -> QuoteResponseMapper : mapEntitiesToResponses(quotesList)
+    activate QuoteResponseMapper
+    QuoteResponseMapper -> QuoteResponseModel : Create list from Entities
+    activate QuoteResponseModel
+    deactivate QuoteResponseMapper
+    QuoteResponseModel --> QuoteService : Response list ready
+    deactivate QuoteResponseModel
+
+    QuoteService --> QuoteController : quotesResponseModels
+    deactivate QuoteService
+    QuoteController --> ShipmentQuotePage : Display quotes list
+    deactivate QuoteController
+end
+
+opt Update Quote via Event
+    note right of ShipmentQuotePage : The Client can not accept their own quote
+
+    ShipmentQuotePage -> QuoteController : POST api/v1/movingexpress/quotes/{quoteId}/events
+    activate QuoteController
+
+    QuoteController -> EventRequestModel : createQuoteEvent(eventRequestModel, quoteId)
+    activate EventRequestModel
+    EventRequestModel -> QuoteService : Determine Event
+    deactivate EventRequestModel
+
+    activate QuoteService
+
+    QuoteService -> QuoteEntity : Apply event to Entity action
+    activate QuoteEntity
+    QuoteEntity --> QuoteService : Event action
+    deactivate QuoteEntity
+
+    QuoteService -> QuoteRepository : Update quote based on event
+    activate QuoteRepository
+    QuoteRepository -> Database : UPDATE quotes SET status = event WHERE id = quoteId
+    activate Database
+    Database --> QuoteRepository : Success
+    deactivate Database
+    QuoteRepository --> QuoteService : Updated quote
+    deactivate QuoteRepository
+
+    QuoteService -> EventResponseModel : Create response based on event outcome
+    activate EventResponseModel
+    EventResponseModel --> QuoteService : Event response
+    deactivate EventResponseModel
+
+    QuoteService --> QuoteController : eventResponseModel
+    deactivate QuoteService
+    QuoteController --> ShipmentQuotePage : Show event success message
+    deactivate QuoteController
+    deactivate ShipmentQuotePage
+end
+
+
+@enduml

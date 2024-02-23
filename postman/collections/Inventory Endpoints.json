@@ -1,0 +1,85 @@
+{
+	"info": {
+		"_postman_id": "8628b259-52b9-414e-9fc7-1aec1ffe8ea8",
+		"name": "Inventory Endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "24061727-8628b259-52b9-414e-9fc7-1aec1ffe8ea8"
+	},
+	"item": [
+		{
+			"name": "Inventory Request",
+			"id": "a898cfab-7f97-4cfc-976a-e8a712e8ab2b",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Living Room B\",\r\n    \"description\" : \"I am here now\",\r\n    \"inventoryStatus\": \"CREATED\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/movingexpress/shipments/{shipmentId}/inventories",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"movingexpress",
+						"shipments",
+						"{shipmentId}",
+						"inventories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update Inventory",
+			"id": "99c176f2-8660-48e4-921e-a997d3a8ee34",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"shipmentId\": \"5dc2c1d3-c9b7-4079-bdf4-cad3725c9a46\",\r\n    \"name\": \"Living Room\",\r\n    \"description\" : \"I am here now\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/movingexpress/shipments/{shipmentId}/inventories/{inventoryId}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"movingexpress",
+						"shipments",
+						"{shipmentId}",
+						"inventories",
+						"{inventoryId}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

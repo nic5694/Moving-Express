@@ -1,0 +1,229 @@
+@startuml
+title Observer Item Management within a Specific Inventory
+
+actor Observer
+
+participant ReactApplication as "<<View>>\nReact Application"
+participant LandingPage as "<<View>>\nLanding Page"
+participant ObserverShipmentDetailsPage as "<<View>>\nObserver Shipment Details Page"
+participant InventoryDropdown as "<<Component>>\nInventory Dropdown"
+participant ItemPopup as "<<Component>>\nItem Popup"
+participant ObserverItemController as "<<Controller>>\nObserver Item Controller"
+participant ItemRequestMapper as "<<Mapper>>\nItem Request Mapper"
+participant "ItemRequestModel" as ItemRequestModel
+participant ItemService as "<<Service>>\nItem Service"
+participant "ItemEntity" as Entity
+participant ItemRepository as "<<Repository>>\nItem Repository"
+participant Database as "<<Database>>"
+participant ItemResponseMapper as "<<Mapper>>\nItem Response Mapper"
+participant "ItemResponseModel" as ItemResponseModel
+
+ref over Observer,ReactApplication,ObserverShipmentDetailsPage : Use Case 5.0 Monitor Shipment (Observer)
+
+ref over ObserverShipmentDetailsPage, InventoryDropdown : Observer Inventory Operations
+
+ObserverShipmentDetailsPage -> InventoryDropdown : Access Inventory Dropdown
+activate InventoryDropdown
+InventoryDropdown -> ObserverItemController : GET /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories/{inventoryId}/items?observerCode=observerCode
+activate ObserverItemController
+
+' Retrieving All Items for Observer
+ObserverItemController -> ItemService : getItems(shipmentId, inventoryId)
+activate ItemService
+ItemService -> ItemRepository : findAllByInventoryIdentifier_InventoryId(inventoryId)
+activate ItemRepository
+ItemRepository -> Database : SELECT * FROM items WHERE inventoryId = inventoryId
+activate Database
+Database --> ItemRepository : Items List
+deactivate Database
+ItemRepository --> ItemService : Items List
+deactivate ItemRepository
+
+' Mapping from Entities to Response Models for Observer
+ItemService -> ItemResponseMapper : entitiesToResponseModels(Items List)
+activate ItemResponseMapper
+ItemResponseMapper -> ItemResponseModel : Converts to ResponseModels List
+activate ItemResponseModel
+ItemResponseModel --> ItemService : ResponseModels List ready
+deactivate ItemResponseModel
+deactivate ItemResponseMapper
+
+ItemService --> ObserverItemController :  return ResponseModels List
+deactivate ItemService
+ObserverItemController --> InventoryDropdown : Display Items List
+deactivate ObserverItemController
+
+opt Get Item by ID for Observer
+    InventoryDropdown -> ItemPopup : Clicks 'View Item Details'
+    activate ItemPopup
+    ItemPopup -> ObserverItemController : GET /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories/{inventoryId}/items/{itemId}?observerCode=observerCode
+    activate ObserverItemController
+
+    ' Retrieving Specific Item for Observer
+    ObserverItemController -> ItemService : getItem(shipmentId, inventoryId, itemId)
+    activate ItemService
+    ItemService -> ItemRepository : findByItemIdentifier_ItemId(itemId)
+    activate ItemRepository
+    ItemRepository -> Database : SELECT * FROM items WHERE id = itemId
+    activate Database
+    Database --> ItemRepository : Item
+    deactivate Database
+    ItemRepository --> ItemService : Item
+    deactivate ItemRepository
+
+    ' Mapping from Entity to Response Model for Observer
+    ItemService -> ItemResponseMapper : entityToResponseModel(Item)
+    activate ItemResponseMapper
+    ItemResponseMapper -> ItemResponseModel : Converts to ResponseModel
+    activate ItemResponseModel
+    ItemResponseModel --> ItemService : ResponseModel ready
+    deactivate ItemResponseModel
+    deactivate ItemResponseMapper
+
+    ItemService --> ObserverItemController : return ResponseModel
+    deactivate ItemService
+    ObserverItemController --> ItemPopup : Display Item Details
+    deactivate ObserverItemController
+    ItemPopup --> InventoryDropdown : Close Popup
+    deactivate ItemPopup
+end
+
+opt Add New Item for Observer
+    note right of ObserverShipmentDetailsPage : The following actions require EDIT or FULL permissions.
+
+    InventoryDropdown -> ItemPopup : User clicks 'Add Item'
+    activate ItemPopup
+
+    ItemPopup -> ObserverItemController : POST /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories/{inventoryId}/items?observerCode=observerCode
+    activate ObserverItemController
+
+    ObserverItemController -> ItemRequestMapper : addItem(shipmentId, inventoryId, itemRequestModel)
+    activate ItemRequestMapper
+
+    ' Mapping from Request Model to Entity
+    ItemRequestMapper -> ItemRequestModel : requestModelToEntity(itemRequestModel)
+    deactivate ItemRequestMapper
+    activate ItemRequestModel
+
+    ItemRequestModel -> ItemService : Passing Request Data
+    activate ItemService
+
+    deactivate ItemRequestModel
+
+    ItemService -> Entity : Set Entity Data
+    activate Entity
+    Entity --> ItemService : Entity prepared
+    deactivate Entity
+
+    ' Persisting the Entity for Observer
+    ItemService -> ItemRepository : save(Entity)
+    activate ItemRepository
+    ItemRepository -> Database : INSERT INTO items
+    activate Database
+    Database --> ItemRepository : Success
+    deactivate Database
+    ItemRepository --> ItemService : Saved Item
+    deactivate ItemRepository
+
+    ' Mapping from Entity to Response Model for Observer
+    ItemService -> ItemResponseMapper : entityToResponseModel(Saved Item)
+    activate ItemResponseMapper
+    ItemResponseMapper -> ItemResponseModel : Converts to ResponseModel
+    activate ItemResponseModel
+    ItemResponseModel --> ItemService : ResponseModel ready
+    deactivate ItemResponseModel
+    deactivate ItemResponseMapper
+
+    ItemService --> ObserverItemController : return ResponseModel
+    deactivate ItemService
+    ObserverItemController --> ItemPopup : Display Created Item
+    deactivate ObserverItemController
+    ItemPopup --> InventoryDropdown : Close Popup
+    deactivate ItemPopup
+end
+
+opt Update Item for Observer
+    note right of ObserverShipmentDetailsPage : The following actions require EDIT or FULL permissions.
+
+    InventoryDropdown -> ItemPopup : User clicks 'Update Item'
+    activate ItemPopup
+
+    ItemPopup -> ObserverItemController : PUT /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories/{inventoryId}/items/{itemId}?observerCode=observerCode
+    activate ObserverItemController
+
+    ' Mapping from Request Model to Entity for Update for Observer
+    ObserverItemController -> ItemRequestMapper : updateItem(shipmentId, inventoryId, itemId, itemRequestModel)
+    activate ItemRequestMapper
+
+    ItemRequestMapper -> ItemRequestModel : requestModelToEntity(itemRequestModel)
+    activate ItemRequestModel
+    deactivate ItemRequestMapper
+
+    ItemRequestModel -> ItemService : Passing the model's Data
+    deactivate ItemRequestModel
+
+    activate ItemService
+    ItemService -> Entity : Updates Entity
+    activate Entity
+    Entity --> ItemService : Updated Entity
+    deactivate Entity
+    ' Persisting the Updated Entity for Observer
+    ItemService -> ItemRepository : save(Updated Entity)
+    activate ItemRepository
+    ItemRepository -> Database : UPDATE items SET ... WHERE id = itemId
+    activate Database
+    Database --> ItemRepository : Success
+    deactivate Database
+    ItemRepository --> ItemService : Updated Item
+    deactivate ItemRepository
+
+    ' Mapping from Updated Entity to Response Model for Observer
+    ItemService -> ItemResponseMapper : entityToResponseModel(Updated Item)
+    activate ItemResponseMapper
+    ItemResponseMapper -> ItemResponseModel : Converts to Updated ResponseModel
+    activate ItemResponseModel
+    ItemResponseModel --> ItemService : Updated ResponseModel ready
+    deactivate ItemResponseModel
+    deactivate ItemResponseMapper
+
+    ItemService --> ObserverItemController : Updated ResponseModel
+    deactivate ItemService
+    ObserverItemController --> ItemPopup : Display Updated Item
+    deactivate ObserverItemController
+    ItemPopup --> InventoryDropdown : Close Popup
+    deactivate ItemPopup
+end
+
+opt Delete Item for Observer
+    note right of ObserverShipmentDetailsPage : The following action requires FULL permission.
+
+    InventoryDropdown -> ItemPopup : User clicks 'Delete Item'
+    activate ItemPopup
+
+    ItemPopup -> ObserverItemController : DELETE /api/v1/movingexpress/shipments/{shipmentId}/observers/inventories/{inventoryId}/items/{itemId}?observerCode=observerCode
+    activate ObserverItemController
+
+    ' Deleting the Entity for Observer
+    ObserverItemController -> ItemService : deleteItem(shipmentId, inventoryId, itemId)
+    activate ItemService
+    ItemService -> ItemRepository : deleteById(itemId)
+    activate ItemRepository
+    ItemRepository -> Database : DELETE FROM items WHERE id = itemId
+    activate Database
+    Database --> ItemRepository : Success
+    deactivate Database
+    ItemRepository --> ItemService : Deletion Confirmed
+    deactivate ItemRepository
+
+    ItemService --> ObserverItemController : Confirmation
+    deactivate ItemService
+    ObserverItemController --> ItemPopup : Display Deletion Confirmation
+    deactivate ObserverItemController
+    ItemPopup --> InventoryDropdown : Close Popup
+    deactivate ItemPopup
+end
+
+InventoryDropdown --> ObserverShipmentDetailsPage : Return to Shipment Details with Success Message
+deactivate InventoryDropdown
+
+@enduml

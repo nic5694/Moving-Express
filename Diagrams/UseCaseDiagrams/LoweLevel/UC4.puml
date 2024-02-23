@@ -1,0 +1,47 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+
+skinparam note {
+ FontSize 10
+}
+skinparam usecase {
+   BackgroundColor DarkSeaGreen
+   BorderColor DarkSlateGray
+   ArrowColor Black
+   ActorBorderColor black
+   ActorBackgroundColor<< Human >> Gold
+}
+
+actor "Moving Estimator" as MovingEstimator #LightGreen
+actor Client as "Client" #LightBlue
+
+rectangle "Moving Express System" {
+   rectangle "UseCase 3 & 4" {
+     usecase "2.0 Request Shipment" as UC2 #LightSeaGreen
+     usecase "4.0 Estimate Shipment" as UC4 #LightSeaGreen
+     usecase "3.0 Estimate Item Value" as UC3 #LightSeaGreen
+     usecase "3.1 Manage Safety Options" as UC3_1 #LightSeaGreen
+
+     note "Optional for additional safety protocols" as N1
+     note "Optional for items with ambiguous value" as N2
+
+   }
+}
+
+UC4 ---[#Red]--- Client
+UC2 ---[#Red]--- Client
+MovingEstimator --> UC4
+
+UC4 ..> UC2 : <<Includes>>
+
+UC4 <.. N2 : <<Extends>>
+N2 .. (UC3)
+
+UC3 <.. N1 : <<Extends>>
+N1 .. (UC3_1)
+
+
+
+@enduml

@@ -1,0 +1,18 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: cimg/openjdk:17.0 # Java 17 Docker image
+    working_directory: ~/MovingExpress
+    steps:
+      - checkout
+      - run:
+          name: build spring boot application
+          command: |
+            cd backend
+            ./gradlew clean build
+
+workflows:
+  ci build:
+    jobs:
+      - build

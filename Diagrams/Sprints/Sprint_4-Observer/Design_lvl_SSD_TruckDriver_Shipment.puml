@@ -1,0 +1,294 @@
+@startuml
+title Truck Driver Shipment Management Sequence Diagram
+
+actor "Truck Driver" as Driver
+
+participant ReactApplication as "<<View>>\nReactApplication"
+participant LoginPage as "<<View>>\nLoginPage"
+participant UnassignedShipmentsPage as "<<View>>\nUnassignedShipmentsPage"
+participant MyShipmentsPage as "<<View>>\nMyShipmentsPage"
+participant Popup as "<<Component>>\nPopup"
+participant ShipmentController as "<<Controller>>\nShipmentController"
+participant AssignDriverAndTruckToShipmentRequest as "<<RequestModel>>\nAssignDriverAndTruckToShipmentRequest"
+participant FinalWeightRequestModel as "<<RequestModel>>\nFinalWeightRequestModel"
+participant ShipmentRequestModel as "<<RequestModel>>\nShipmentRequestModel"
+participant ShipmentService as "<<Service>>\nShipmentService"
+participant ShipmentEntity as "<<Entity>>\nShipment"
+participant ShipmentRepository as "<<Repository>>\nShipmentRepository"
+participant Database as "<<Database>>\nDatabase"
+participant ShipmentResponseMapper as "<<Mapper>>\nShipmentResponseMapper"
+participant "ShipmentResponseModel" as ShipmentResp
+participant ListShipmentResp as "List<ShipmentResponseModel>"
+
+
+Driver -> ReactApplication : Access website
+activate ReactApplication
+ReactApplication -> LoginPage : Navigate to Login
+activate LoginPage
+deactivate ReactApplication
+
+LoginPage -> UnassignedShipmentsPage : Truck Driver logs in
+activate UnassignedShipmentsPage
+deactivate LoginPage
+
+UnassignedShipmentsPage -> ShipmentController : GET /api/v1/shipments/unassigned/driver
+activate ShipmentController
+
+ShipmentController -> ShipmentService : getUnassignedShipments()
+activate ShipmentService
+
+ShipmentService -> ShipmentRepository : findAllByDriverIdIsNull()
+activate ShipmentRepository
+
+ShipmentRepository -> Database : SELECT * FROM shipments WHERE driverId IS NULL
+activate Database
+Database --> ShipmentRepository : Unassigned Shipments
+deactivate Database
+
+ShipmentRepository --> ShipmentService : List<Shipment>
+deactivate ShipmentRepository
+
+ShipmentService -> ShipmentResponseMapper : mapEntitiesToResponseModels(Unassigned Shipments)
+activate ShipmentResponseMapper
+ShipmentResponseMapper --> ListShipmentResp : fetch "List<ShipmentResponseModel>"(Shipments)
+activate ListShipmentResp
+ListShipmentResp --> ShipmentService : return List of unassigned ShipmentResponseModel
+deactivate ListShipmentResp
+
+deactivate ShipmentResponseMapper
+
+ShipmentService --> ShipmentController : ShipmentResponseModel
+deactivate ShipmentService
+ShipmentController --> UnassignedShipmentsPage : Display Unassigned Shipments
+UnassignedShipmentsPage --> Driver : Show Unassigned Shipments
+
+deactivate ShipmentController
+
+UnassignedShipmentsPage -> MyShipmentsPage : Navigate to My Shipments
+activate MyShipmentsPage
+deactivate UnassignedShipmentsPage
+
+MyShipmentsPage -> ShipmentController : GET /api/v1/shipments/assigned/driver
+activate ShipmentController
+
+ShipmentController -> ShipmentService : getShipmentsByDriverId(driverId)
+activate ShipmentService
+
+ShipmentService -> ShipmentRepository : findAllByDriverId(driverId)
+activate ShipmentRepository
+
+ShipmentRepository -> Database : SELECT * FROM shipments WHERE driverId = driverId
+activate Database
+Database --> ShipmentRepository : Assigned Shipments
+deactivate Database
+
+ShipmentRepository --> ShipmentService : List<Shipment>
+deactivate ShipmentRepository
+
+loop for each shipment in List<Shipment>
+    ShipmentService -> ShipmentResponseMapper : mapEntityToResponseModel(Shipment)
+    activate ShipmentResponseMapper
+    ShipmentResponseMapper --> ListShipmentResp : fetch "ShipmentResponseModel"(Shipment)
+    activate ListShipmentResp
+    deactivate ShipmentResponseMapper
+end
+ListShipmentResp --> ShipmentService : return List of ShipmentResponseModel for driver
+deactivate ListShipmentResp
+ShipmentService --> ShipmentController : List of ShipmentResponseModel
+deactivate ShipmentService
+ShipmentController --> MyShipmentsPage : Display My Shipments
+deactivate ShipmentController
+
+MyShipmentsPage -> ShipmentController : PUT /api/v1/movingexpress/shipments (AssignDriverAndTruckToShipmentRequest)
+activate ShipmentController
+
+ShipmentController -> AssignDriverAndTruckToShipmentRequest : assignTruckAndDriverToShipment(assignDriverAndTruckToShipmentRequest)
+activate AssignDriverAndTruckToShipmentRequest
+
+AssignDriverAndTruckToShipmentRequest -> ShipmentService : Provide driverId and vin
+activate ShipmentService
+deactivate AssignDriverAndTruckToShipmentRequest
+
+ShipmentService -> ShipmentEntity : Update with driver and truck data
+activate ShipmentEntity
+ShipmentEntity --> ShipmentService : Updated Entity
+deactivate ShipmentEntity
+
+ShipmentService -> ShipmentRepository : save(Updated ShipmentEntity)
+activate ShipmentRepository
+
+ShipmentRepository -> Database : UPDATE shipments SET driverId = assignDriverAndTruckToShipmentRequest.driverId, truckIdentifier = assignDriverAndTruckToShipmentRequest.vin WHERE id = assignDriverAndTruckToShipmentRequest.shipmentId
+activate Database
+Database --> ShipmentRepository : Success
+
+deactivate Database
+
+ShipmentRepository --> ShipmentService : Updated Shipment
+deactivate ShipmentRepository
+
+
+ShipmentService -> ShipmentResponseMapper : mapToResponseModel(Updated ShipmentEntity)
+activate ShipmentResponseMapper
+ShipmentResponseMapper --> ShipmentResp : ShipmentResponseModel
+activate ShipmentResp
+deactivate ShipmentResponseMapper
+
+ShipmentResp --> ShipmentService : Return ResponseModel
+deactivate ShipmentResp
+
+ShipmentService --> ShipmentController : Success (ShipmentResponseModel)
+deactivate ShipmentService
+ShipmentController --> MyShipmentsPage : Show "Assigned" (ShipmentResponseModel)
+deactivate ShipmentController
+
+
+opt Update Shipment Status
+    MyShipmentsPage -> Popup : Open Status Shipment Popup
+    activate Popup
+
+    Popup -> ShipmentController : PUT /api/v1/movingexpress/shipments/{shipmentId} (ShipmentRequestModel)
+    activate ShipmentController
+
+    ShipmentController -> ShipmentRequestModel : updateShipmentStatus(shipmentId, shipmentRequestModel)
+    activate ShipmentRequestModel
+
+
+
+    ShipmentRequestModel -> ShipmentService : Provide new status
+    activate ShipmentService
+    deactivate ShipmentRequestModel
+
+    ShipmentService -> ShipmentEntity : Update with the new status
+    activate ShipmentEntity
+    ShipmentEntity --> ShipmentService : Updated Entity (with new status)
+    deactivate ShipmentEntity
+
+    ShipmentService -> ShipmentRepository : save(Updated Shipment)
+    activate ShipmentRepository
+
+    ShipmentRepository -> Database : UPDATE shipments SET status = shipmentRequestModel.status WHERE id = shipmentId
+    activate Database
+    Database --> ShipmentRepository : Success
+    deactivate Database
+
+    ShipmentRepository --> ShipmentService : Updated Shipment
+    deactivate ShipmentRepository
+
+    ShipmentService -> ShipmentResponseMapper : mapToResponseModel(Updated Shipment)
+    activate ShipmentResponseMapper
+    ShipmentResponseMapper --> ShipmentResp : fetch new ShipmentResponseModel
+    activate ShipmentResp
+    ShipmentResp --> ShipmentService : return updated shipment model
+    deactivate ShipmentResp
+    deactivate ShipmentResponseMapper
+
+    ShipmentService --> ShipmentController : Success (ShipmentResponseModel)
+    deactivate ShipmentService
+    ShipmentController --> Popup : Update Status Confirmation (ShipmentResponseModel)
+    Popup --> MyShipmentsPage : Close Status Popup
+    deactivate Popup
+
+    MyShipmentsPage --> Driver : Status Updated Confirmation
+    deactivate ShipmentController
+end
+
+
+opt Set Final Weight
+    MyShipmentsPage -> Popup : Open Final Weight Shipment Popup
+    activate Popup
+
+    Popup -> ShipmentController : PUT /api/v1/movingexpress/shipments/{shipmentId}/setShipmentFinalWeight (FinalWeightRequestModel)
+    activate ShipmentController
+
+    ShipmentController -> FinalWeightRequestModel : setShipmentFinalWeight(shipmentId, finalWeightRequestModel)
+    activate FinalWeightRequestModel
+
+
+    FinalWeightRequestModel -> ShipmentService : Provide the final weight
+    activate ShipmentService
+    deactivate FinalWeightRequestModel
+
+    ShipmentService -> ShipmentEntity : Update the entity with the final weight
+    activate ShipmentEntity
+    ShipmentEntity --> ShipmentService : Updated Entity (with Final Weight)
+    deactivate ShipmentEntity
+
+    ShipmentService -> ShipmentRepository : save(Updated Shipment with finalWeight)
+    activate ShipmentRepository
+
+    ShipmentRepository -> Database : UPDATE shipments SET weight = finalWeightRequestModel.weight WHERE id = shipmentId
+    activate Database
+    Database --> ShipmentRepository : Success
+    deactivate Database
+
+    ShipmentRepository --> ShipmentService : Updated Shipment
+    deactivate ShipmentRepository
+
+    ShipmentService -> ShipmentResponseMapper : mapToResponseModel(Updated Shipment with finalWeight)
+    activate ShipmentResponseMapper
+    ShipmentResponseMapper --> ShipmentResp : fetch new ShipmentResponseModel
+    activate ShipmentResp
+    ShipmentResp --> ShipmentService : return updated shipment with final weight model
+    deactivate ShipmentResp
+    deactivate ShipmentResponseMapper
+
+    ShipmentService --> ShipmentController : Success (ShipmentResponseModel)
+    deactivate ShipmentService
+    ShipmentController --> Popup : Final Weight Updated (ShipmentResponseModel)
+    Popup --> MyShipmentsPage : Close Final Weight Popup
+    deactivate Popup
+
+    MyShipmentsPage --> Driver : Final Weight Update Confirmation
+    deactivate ShipmentController
+end
+
+opt Unassign Shipment
+    MyShipmentsPage -> Popup : Open Unassign Shipment Popup
+    activate Popup
+    Popup -> ShipmentController : PUT /api/v1/movingexpress/shipments/{shipmentId}/driver
+    activate ShipmentController
+
+    ShipmentController -> ShipmentService : unassignShipment(shipmentId, driverId)
+    activate ShipmentService
+
+    ShipmentService -> ShipmentRepository : findShipmentByShipmentIdentifier_ShipmentId(shipmentId)
+    activate ShipmentRepository
+
+    ShipmentRepository -> Database : SELECT * FROM shipments WHERE id = shipmentId
+    activate Database
+    Database --> ShipmentRepository : success
+    deactivate Database
+
+    ShipmentRepository --> ShipmentService : Shipment Data
+    deactivate ShipmentRepository
+
+    ShipmentService -> ShipmentRepository : save(Updated Shipment with driverId = NULL and truckIdentifier = NULL)
+    activate ShipmentRepository
+
+    ShipmentRepository -> Database : UPDATE shipments SET driverId = NULL, truckIdentifier = NULL WHERE id = shipmentId
+    activate Database
+    Database --> ShipmentRepository : Success
+    deactivate Database
+
+    ShipmentRepository --> ShipmentService : Updated Shipment
+    deactivate ShipmentRepository
+
+    ShipmentService -> ShipmentResponseMapper : entityToResponseModel(Updated Shipment with driverId and truckIdentifier set to NULL)
+    activate ShipmentResponseMapper
+    ShipmentResponseMapper --> ShipmentResp : fetch new ShipmentResponseModel
+    activate ShipmentResp
+    ShipmentResp --> ShipmentService : return unassigned shipment model
+    deactivate ShipmentResp
+    deactivate ShipmentResponseMapper
+
+    ShipmentService --> ShipmentController : Success (ShipmentResponseModel)
+    deactivate ShipmentService
+    ShipmentController --> Popup : Shipment Unassigned (ShipmentResponseModel)
+    Popup --> MyShipmentsPage : Close Popup
+    deactivate Popup
+    MyShipmentsPage --> Driver : Shipment Unassigned Confirmation
+
+    deactivate ShipmentController
+end
+
+@enduml

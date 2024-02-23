@@ -1,0 +1,125 @@
+@startuml
+title Observer Domain Class Diagram within Moving Express Subdomain
+
+package "ObserverSubdomain" {
+    package "businesslayer" {
+        interface ObserverService {
+            + getAllObservers(shipmentId: String) : List<ObserverResponseModel>
+            + getObserverByObserverCode(shipmentId: String, observerCode: String) : ObserverResponseModel
+            + createObserver(observerRequestModel: ObserverRequestModel, shipmentId: String) : ObserverResponseModel
+            + deleteObserverCode(observerId: String, shipmentId: String) : Void
+            + editObserverPermission(observerRequestModel: ObserverRequestModel, observerId: String, shipmentId: String) : ObserverResponseModel
+        }
+
+        class ObserverServiceImpl {
+            - observerRepository: ObserverRepository
+            - observerResponseMapper: ObserverResponseMapper
+            - observerRequestMapper: ObserverRequestMapper
+            + getAllObservers(shipmentId: String) : List<ObserverResponseModel>
+            + getObserverByObserverCode(shipmentId: String, observerCode: String) : ObserverResponseModel
+            + createObserver(observerRequestModel: ObserverRequestModel, shipmentId: String) : ObserverResponseModel
+            + deleteObserverCode(observerId: String, shipmentId: String) : Void
+            + editObserverPermission(observerRequestModel: ObserverRequestModel, observerId: String, shipmentId: String) : ObserverResponseModel
+        }
+    }
+
+    package "datalayer" {
+        class Observer {
+            - id : Integer
+            - observerIdentifier : ObserverIdentifier
+            - shipmentIdentifier : ShipmentIdentifier
+            - name : String
+            - observerCode : String
+            - permission : Permission
+        }
+
+        class ObserverIdentifier {
+            - observerId : String
+        }
+
+        enum Permission {
+            READ
+            EDIT
+            FULL
+        }
+
+        interface ObserverRepository {
+            + findObserverByObserverCode(observerCode: String) : Observer
+            + findObserverByObserverIdentifier_ObserverId(ObserverId: String) : Observer
+            + findAllByShipmentIdentifier_ShipmentId(shipmentId: String) : List<Observer>
+            + existsByObserverCode(observerCode: String) : boolean
+            + findByObserverIdentifier_ObserverId(observerId: String) : Observer
+        }
+    }
+
+    package "datamapperlayer" {
+        interface ObserverResponseMapper {
+            + entityToResponseModel(observer: Observer) : ObserverResponseModel
+            + entitiesToResponseModels(observers: List<Observer>) : List<ObserverResponseModel>
+        }
+
+        interface ObserverRequestMapper {
+            + requestModelToEntity(observerRequestModel: ObserverRequestModel) : Observer
+        }
+    }
+
+    package "presentationlayer" {
+        class ObserverController {
+            - observerService: ObserverService
+            - inventoryService: InventoryService
+            - itemService: ItemService
+            + getAllObservers(shipmentId: String) : ResponseEntity<List<ObserverResponseModel>>
+            + getObserverByObserverCode(observerCode: String, shipmentId: String) : ResponseEntity<ObserverResponseModel>
+            + createObserver(observerRequestModel: ObserverRequestModel, shipmentId: String) : ResponseEntity<ObserverResponseModel>
+            + deleteObserverCode(observerId: String, shipmentId: String) : ResponseEntity<Void>
+            + editObserverPermission(observerRequestModel: ObserverRequestModel, observerId: String, shipmentId: String) : ResponseEntity<ObserverResponseModel>
+            + getInventoryById(inventoryId: String, observerCode: Optional<String>) : ResponseEntity<InventoryResponseModel>
+            + getInventories(shipmentId: String, observerCode: Optional<String>) : ResponseEntity<List<InventoryResponseModel>>
+            + addInventory(inventoryRequestModel: InventoryRequestModel, shipmentId: String, observerCode: Optional<String>) : ResponseEntity<InventoryResponseModel>
+            + deleteInventory(inventoryId: String, observerCode: Optional<String>) : ResponseEntity<Void>
+            + editInventory(inventoryRequestModel: InventoryRequestModel, inventoryId: String, observerCode: Optional<String>) : ResponseEntity<InventoryResponseModel>
+            + addItem(itemRequestModel: ItemRequestModel, shipmentId: String, inventoryId: String, observerCode: Optional<String>) : ResponseEntity<ItemResponseModel>
+            + getItems(shipmentId: String, inventoryId: String, observerCode: Optional<String>) : ResponseEntity<List<ItemResponseModel>>
+            + getItem(shipmentId: String, inventoryId: String, itemId: String, observerCode: Optional<String>) : ResponseEntity<ItemResponseModel>
+            + deleteItem(shipmentId: String, inventoryId: String, itemId: String, observerCode: Optional<String>) : ResponseEntity<Void>
+            + updateItem(shipmentId : String, inventoryId : String, itemId : String, itemRequestModel : ItemRequestModel, observerCode : Optional<String>) : ResponseEntity<ItemResponseModel>
+
+        }
+
+        class ObserverRequestModel {
+            - name: String
+            - permission: Permission
+            - observerCode: String
+        }
+
+        class ObserverResponseModel {
+            - observerId: String
+            - name: String
+            - observerCode: String
+            - permission: Permission
+            - shipmentId: String
+        }
+    }
+
+    ' Relationships For ObserverSubdomain
+    ObserverController -up-> ObserverService : uses
+    ObserverController -down-> ObserverRequestModel : manages
+    ObserverController -down-> ObserverResponseModel : manages
+
+    ObserverServiceImpl -down-|> ObserverService : implements
+    ObserverServiceImpl -up-> ObserverRepository : uses
+    ObserverServiceImpl -up-> ObserverResponseMapper : uses
+    ObserverServiceImpl -up-> ObserverRequestMapper : uses
+
+    ObserverRepository -up-> Observer : accesses
+    Observer -up-> ObserverIdentifier : contains
+
+    ObserverResponseMapper -up-> Observer : maps
+    ObserverRequestMapper -up-> Observer : maps
+
+    ' Relationships For Enum
+    Observer -up-^ Permission : has permission
+
+}
+
+@enduml

@@ -1,0 +1,274 @@
+@startuml
+hide circle
+
+!define ENTITY(entityName) class entityName << Entity >>
+!define AGGREGATE_ROOT(aggregateRootName) class aggregateRootName << Aggregate Root >>
+!define VALUE_OBJECT(valueObjectName) class valueObjectName << Value Object >>
+!pragma useVerticalIf on
+skinparam dpi 350
+skinparam packageStyle rectangle
+skinparam rectangle {
+    BackgroundColor #f7f4eb
+    BorderColor Black
+}
+
+skinparam package {
+    BackgroundColor<<Entity>> LightCyan
+    BackgroundColor<<Aggregate Root>> LightGreen
+    BackgroundColor<<Value Object>> LightGray
+}
+rectangle "Bounded Context" as BoundedContextMovingExpress #line.dashed {
+Package "Inventory Sub-Domain" <<Rectangle>> #BBDEFB{
+
+    note "Invariant: [Every time an update is made or when the inventory is created, the current date must be the value for lastUpdated]" as inventoryInvariant1
+
+    AGGREGATE_ROOT(TruckInventory) #lightblue{
+        inventories: List<Inventories>
+    }
+    ENTITY(Inventory) #FFCA57{
+        room: String
+        lastUpdated: Date
+    }
+
+    VALUE_OBJECT(InventoryIdentifier){
+        inventoryId: String
+    }
+
+    VALUE_OBJECT(Inventories){
+        inventories: List<InventoryIdentifier>
+    }
+
+    VALUE_OBJECT(BoxList){
+        boxes: List<BoxIdentifier>
+    }
+
+    ENTITY(Box) #FFCA57 {
+        name: String
+        handling: list[enum]
+    }
+
+    VALUE_OBJECT(ItemList){
+        itemList: List<ItemIdentifier>
+    }
+
+    VALUE_OBJECT(BoxIdentifier) {
+        boxId: String
+    }
+
+    ENTITY(Item) #FFCA57 {
+        description: String
+        existingDammage: bool
+        price: double
+        handling: list[enum]
+        picture: blob[]
+    }
+
+    VALUE_OBJECT(ItemIdentifier){
+        itemId: String
+    }
+}
+Package "User Sub-Domain" <<Rectangle>> #FFCDD2{
+    AGGREGATE_ROOT(User) #lightblue{
+        username: String
+        password: String
+        type: Enum
+    }
+    VALUE_OBJECT(UserIdentifier){
+        userId: String
+    }
+}
+
+
+Package "Notification Service" <<Rectangle>> #BBDEFB{
+    ENTITY(Notification) #FFCA57 {
+        type: enum
+        message: String
+        urgency: enum
+        date: Date
+    }
+    VALUE_OBJECT(RecipientList){
+        recipients: List<UserIdentifier>
+    }
+}
+
+Package "Reports Service" <<Rectangle>> #BBDEFB{
+    AGGREGATE_ROOT(Report) #lightblue {
+        name: String
+        type: enum
+        generationDate: dateTime
+        validity: date
+    }
+    VALUE_OBJECT(ReportIdentifier){
+        reportId: String
+    }
+
+}
+
+Package "Claims Service"<<Rectangle>> #FFCDD2{
+    AGGREGATE_ROOT(Claim) #lightblue {
+        claimStatus: enum
+        claimType: enum
+        claimDate: Date
+        claimDescription: String
+    }
+    VALUE_OBJECT(ClaimIdentifier){
+        claimId: String
+    }
+
+}
+
+
+Package "Shipment Sub-Domain" <<Rectangle>> #BBDEFB{
+
+    note "Invariant:  [The arrival address and departure address of the shipment must be different]" as Invariant2
+    AGGREGATE_ROOT(Shipment) #lightblue{
+        shipmentStatus: enum
+    }
+
+    ENTITY(ObserverCode) #FFCA57{
+        name: String
+        permission: list[enum]
+    }
+
+    VALUE_OBJECT(ObserverCodeIdentifier){
+        code: String
+    }
+
+
+
+    VALUE_OBJECT(DepartureAddress){
+        streetAddress: String
+        city: String
+        postalCode: String
+        province: String
+        country: String
+    }
+    VALUE_OBJECT(ArrivalAddress){
+        streetAddress: String
+        city: String
+        postalCode: String
+        province: String
+        country: String
+    }
+
+    VALUE_OBJECT(Movers) {
+        movers: List<Mover>
+    }
+
+    ENTITY(Driver) #FFCA57{
+        firstName: String
+        lastName: String
+    }
+
+    VALUE_OBJECT(DriverIdentifier){
+        driverId: String
+    }
+
+    ENTITY(MovingCrew) #FFCA57 {
+        type: enum
+    }
+    ENTITY(Trailer) #FFCA57{
+        capacity: double
+        serialnumber: String
+        liscencePlate: String
+    }
+    VALUE_OBJECT(TractorIdentifier){
+        VIN: String
+    }
+    VALUE_OBJECT(TrailerIdentifier){
+        VIN: String
+    }
+
+    VALUE_OBJECT(ContactDetails){
+        phoneNumber: String
+        email: String
+    }
+    ENTITY(Mover) #FFCA57 {
+        firstName: String
+        lastName: String
+        email: String
+    }
+
+    ENTITY(Tractor) #FFCA57 {
+        vin: String
+        capacity: String
+    }
+
+    VALUE_OBJECT(MovingCrewIdentifier){
+        movingCrewId: String
+    }
+
+    VALUE_OBJECT(MoverIdentifier) {
+        moverIdentifier: String
+    }
+    VALUE_OBJECT(ShipmentIdentifier){
+        shipmentId: String
+    }
+
+}
+
+
+
+Package "Customer Sub-Domain" <<Rectangle>> #BBDEFB{
+    ENTITY(Customer) #FFCA57 {
+        firstName: String
+        lastName: String
+    }
+    VALUE_OBJECT(Address){
+        streetAddress: String
+        city: String
+        postalCode: String
+        province: String
+        country: String
+    }
+    VALUE_OBJECT(CustomerIdentifier){
+        customerId: String
+    }
+    
+}
+    Driver *---- ContactDetails
+    Movers *-- MoverIdentifier
+    MovingCrew *---- Movers
+    Shipment ----> MovingCrewIdentifier
+    Shipment *---- DepartureAddress
+    Shipment *---- ArrivalAddress
+    Tractor ---> TractorIdentifier
+    Trailer ----> TrailerIdentifier
+    MovingCrew ----> MovingCrewIdentifier
+    Mover --> MoverIdentifier
+    Driver ----> DriverIdentifier
+    Shipment ----> TrailerIdentifier
+    Shipment ----> TractorIdentifier
+    Shipment -----> ShipmentIdentifier
+    Customer ----> CustomerIdentifier
+    Customer *---- Address
+    Customer *---- ContactDetails
+    Shipment ----> CustomerIdentifier
+    Customer ----* Shipment
+    Claim ---> ClaimIdentifier
+    Claim ---> ShipmentIdentifier
+    Claim ---> CustomerIdentifier
+    Claim ---> ItemIdentifier
+    Notification ---> RecipientList
+    RecipientList o--- UserIdentifier
+    Report --> ReportIdentifier
+    Report --> ShipmentIdentifier
+    User ---> UserIdentifier
+    TruckInventory ---> ShipmentIdentifier
+    BoxList *--- BoxIdentifier
+    TruckInventory ----> TractorIdentifier
+    TruckInventory o---- Inventories
+    TruckInventory ----> TrailerIdentifier
+    Inventories *---- InventoryIdentifier
+    Inventory ----> InventoryIdentifier
+    Item ---=> ItemIdentifier
+    Box ----> BoxIdentifier
+    Box o---- ItemList
+    ItemList *--- ItemIdentifier
+    Inventory "1"*---"0..*" BoxList
+    Inventory "1"*---"0..*" ItemList
+    ObserverCode ---> ObserverCodeIdentifier
+    ObserverCode ---> ShipmentIdentifier
+}
+
+@enduml

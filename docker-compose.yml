@@ -1,0 +1,46 @@
+services:
+  api:
+    container_name: movingSystemApi
+    build: backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+
+#  single_page_app:
+#    container_name: movingSystemSinglePageApp
+#    image: docker-react-i
+#    build:
+#      context: ./frontend
+#    ports:
+#      - 3000:80
+
+  # mysql1:
+  #   image: mysql:5.7
+  #   container_name: movingsystem-db
+  #   platform: linux/amd64 # for M1 Macs
+  #   ports:
+  #     - "3310:3306"
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=rootpwd
+  #     - MYSQL_DATABASE=movingsystem-db
+  #     - MYSQL_USER=user
+  #     - MYSQL_PASSWORD=pwd
+  #   volumes:
+  #     - ./data/mysql1:/var/lib/mysql1
+  #     - ./data/init.d:/docker-entrypoint-initdb.d
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "mysqladmin",
+  #         "ping",
+  #         "-uuser",
+  #         "-ppwd",
+  #         "-h",
+  #         "localhost",
+  #       ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 10

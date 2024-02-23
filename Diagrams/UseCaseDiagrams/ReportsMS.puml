@@ -1,0 +1,58 @@
+@startuml
+
+left to right direction
+skinparam actorStyle awesome
+skinparam usecase {
+    BackgroundColor DarkSeaGreen
+    BorderColor DarkSlateGray
+    ArrowColor Black
+    ActorBorderColor black
+    ActorFontName Courier
+    ActorBackgroundColor<< Human >> Gold
+}
+
+actor  "Anonymous Client" #Blue
+actor  "Anonymous Loader" #Yellow
+actor  "Client" #Green
+actor  "Van Driver" #Red
+actor  "System Administrator" as Admin #Pink
+
+
+rectangle "Moving Express System" {
+    rectangle "Reports Subsystem" {
+      usecase "Generate Report"
+      usecase "Request Report modification"
+      usecase "View Report Details"
+      usecase "View Reports"
+      usecase "Update Report"
+      usecase "Delete Report"
+
+    }
+}
+
+
+"Client" -[#Blue]-> "View Report Details"
+"Client" -[#Blue]-> "Request Report modification"
+
+
+"Anonymous Client" -[#Green]-> "View Report Details"
+
+"Van Driver" -[#Purple]-> "View Report Details"
+"Van Driver" -[#Purple]-> "Request Report modification"
+
+"Anonymous Loader" -[#Orange]-> "View Report Details"
+
+Admin --> "Generate Report"
+Admin -> "View Report Details"
+Admin --> "View Reports"
+Admin -> "Update Report"
+Admin -> "Delete Report"
+
+
+Admin --|> "Client"
+Admin --|> "Anonymous Client"
+Admin --|> "Anonymous Loader"
+Admin --|> "Van Driver"
+
+
+@enduml
