@@ -67,7 +67,7 @@ Package "Inventory Sub-Domain" <<Rectangle>> #BBDEFB{
         itemId: String
     }
 }
-Package "User Sub-Domain" <<Rectangle>> #FFCDD2{
+Package "User Sub-Domain" <<Rectangle>> #BBDEFB{
     AGGREGATE_ROOT(User) #lightblue{
         username: String
         password: String
@@ -91,7 +91,7 @@ Package "Notification Service" <<Rectangle>> #BBDEFB{
     }
 }
 
-Package "Reports Service" <<Rectangle>> #BBDEFB{
+Package "Reports Service" <<Rectangle>> #FFCDD2{
     AGGREGATE_ROOT(Report) #lightblue {
         name: String
         type: enum

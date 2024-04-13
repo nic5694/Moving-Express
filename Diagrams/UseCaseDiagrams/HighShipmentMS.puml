@@ -40,7 +40,7 @@ Client --- UC12
 Client -- UC1
 Client --- UC3
 Client --- UC2
-Client -- UC11
+
 
 
 UC2 -[#LightSeaGreen]- MovingEstimator
@@ -52,6 +52,7 @@ Observer -[#Orange] UC6
 Observer -[#Orange] UC7
 Observer -[#Orange] UC9
 Observer -[#Orange]- UC10
+Observer -[#Orange]- UC11
 
 VanDriver --[#Purple]- UC11
 UC5 --[#Purple]-- VanDriver

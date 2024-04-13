@@ -7,7 +7,6 @@ import com.example.backend.usersubdomain.buisnesslayer.UserService;
 import com.example.backend.usersubdomain.presentationlayer.UserRequestModel;
 import lombok.Generated;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,8 +53,8 @@ public class SecurityController {
         //handle apple, google and facebook login
         if (principal.getSubject().contains("apple") || principal.getSubject().contains("google-oauth2")
                 || principal.getSubject().contains("facebook")) {
-            return ResponseEntity.status(302)
-                    .location(URI.create(frontendDomain + "external")).build();
+                 return ResponseEntity.status(HttpStatus.FOUND)
+                        .location(URI.create(frontendDomain+"external")).build();
         }
         if (principal.getSubject().contains("auth0")) {
             if (!principal.getClaims().containsKey("https://movingexpress.com/roles")
